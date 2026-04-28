@@ -1,0 +1,49 @@
+[project]
+name = "asimov-sim-lab"
+version = "0.1.0"
+description = "A spec-first MuJoCo inspection and validation workbench for the Asimov v1 simulation model."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [
+  { name = "Abdel" }
+]
+dependencies = [
+  "pydantic>=2.11,<3",
+  "rich>=14.0.0,<15",
+  "typer>=0.16.0,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0,<9",
+  "pytest-cov>=5.0.0,<6",
+  "ruff>=0.11.0,<1",
+  "mypy>=1.15.0,<2",
+]
+
+[project.scripts]
+asimov-sim-lab = "asimov_sim_lab.cli:app"
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["asimov_sim_lab"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/asimov_sim_lab"]
