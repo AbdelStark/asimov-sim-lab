@@ -24,6 +24,20 @@
     - the repo should not overstate what is already built
     - the first implementation should stay narrow and evidence-producing
 
+    ## Phase-2 lock note
+    This document captures the full product direction. It is not the same thing as the next implementation slice.
+
+    The currently locked implementation truth lives in:
+    - `docs/spec/MANIFEST-CONTRACT.md`
+    - `docs/spec/RESULT-SCHEMA-CONTRACT.md`
+    - `docs/spec/CLI-COMMAND-SPEC.md`
+    - `docs/spec/PROFILE-CONTRACT.md`
+    - `docs/spec/FIRST-THREE-SCENARIOS-BUILD-PACK.md`
+
+    In plain terms:
+    - `open` and `capture` remain product-direction commands
+    - the next implementation pass is work pack 1 only, starting with `doctor` and asset-manifest truth
+
     ## Non-goals for this phase
     - no premature full product implementation
     - no marketing-site fluff
@@ -112,6 +126,9 @@ Optional generated inputs:
 
 ### One-Command Launch
 
+Status:
+- product direction, not phase-3 day-one scope
+
 - Provide a CLI command:
 
 ```bash
@@ -119,7 +136,7 @@ asimov-sim-lab open
 ```
 
 - It should:
-  - locate or download the Asimov v1 sim assets
+  - locate the Asimov v1 sim assets
   - verify mesh references
   - open the MuJoCo viewer
   - print a short model summary
@@ -170,6 +187,9 @@ MVP preset poses:
 Each preset should be stored as data, not hardcoded only in UI logic.
 
 ### Capture Tools
+
+Status:
+- deferred beyond the first implementation slice
 
 - Capture screenshot from a named camera.
 - Save image output with model commit metadata.
@@ -263,15 +283,26 @@ asimov-sim-lab/
 
 ## MVP Scope
 
-1. CLI package with `inspect`, `validate`, and `open`.
+1. CLI package with `doctor`, `inspect`, and `validate`.
 2. Asset locator that supports a local `asimov-v1` checkout path.
 3. Model contract generation.
 4. Mesh, actuator, sensor, and preset validation.
 5. Basic preset pose files.
 6. README with one-command launch and validation examples.
 
+## First implementation slice
+
+Before the broader MVP lands, the next shipped slice is narrower:
+
+1. asset-root resolution
+2. manifest-backed `doctor`
+3. tiny synthetic fixtures proving typed failures
+
+`open` and `capture` are intentionally deferred until the source-contract path is stable.
+
 ## V1 Scope
 
+- `open` command for local viewer launch.
 - Joint slider UI.
 - Screenshot capture by camera and pose.
 - Short video capture of pose transitions.

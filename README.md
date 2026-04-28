@@ -4,7 +4,7 @@ A spec-first MuJoCo inspection and validation workbench for the Asimov v1 simula
 
 ## Status
 
-Spec-first private incubation repo. The current phase is contract hardening, not feature sprawl.
+Private incubation repo. Phase 2 contract hardening is now locked. The next pass should implement the first narrow real value loop rather than inventing more surface area.
 
 ## Thesis
 
@@ -19,6 +19,7 @@ The upstream Asimov release already contains technically valuable source materia
 - modern `uv`-managed Python project
 - spec-first / RFC-first execution
 - clean package scaffold for future implementation
+- phase 2 contracts locked for manifest, result schemas, CLI semantics, profiles, and first work packs
 - emphasis on reproducibility, provenance, and validation
 - no inflated claims about hardware fidelity, manufacturing completeness, or electrical safety
 
@@ -29,23 +30,34 @@ The upstream Asimov release already contains technically valuable source materia
 - tests in `tests/`
 - optional secondary UI surfaces only after the core data contracts are stable
 
-## Source of truth for phase 1
+## Source of truth before implementation
 
 Read these first:
 
 1. `docs/spec/PRODUCT-SPEC.md`
 2. `docs/spec/IMPLEMENTATION-PLAN.md`
 3. `docs/spec/MVP-STATUS.md`
-4. `docs/rfcs/README.md`
+4. `docs/spec/MANIFEST-CONTRACT.md`
+5. `docs/spec/RESULT-SCHEMA-CONTRACT.md`
+6. `docs/spec/CLI-COMMAND-SPEC.md`
+7. `docs/spec/PROFILE-CONTRACT.md`
+8. `docs/spec/FIRST-THREE-SCENARIOS-BUILD-PACK.md`
+9. `docs/rfcs/README.md`
 
 ## Initial commands
 
 ```bash
-uv sync
+uv sync --extra dev
 uv run pytest
 uv run ruff check .
+uv run mypy
+uv run asimov-sim-lab doctor
 ```
 
 ## Immediate next milestone
 
-Lock contracts and fixtures before writing real product logic.
+Implement work pack 1:
+- asset-root resolution
+- manifest generation
+- `doctor --format json`
+- tiny synthetic source-root fixtures

@@ -1,7 +1,9 @@
 # RFC Index — Asimov Sim Lab
 
-These RFCs are implementation contracts. Future coding should read them before touching runtime code.
+## Purpose
+These RFCs define the durable architecture and product-contract boundaries for the repo.
 
+## RFCs
 - `RFC-0001-repo-architecture.md`
 - `RFC-0002-source-sync-and-provenance.md`
 - `RFC-0003-domain-schema-contract.md`
@@ -9,3 +11,13 @@ These RFCs are implementation contracts. Future coding should read them before t
 - `RFC-0005-validation-and-error-taxonomy.md`
 - `RFC-0006-evidence-and-export-contract.md`
 - `RFC-0007-ci-release-and-quality-gates.md`
+
+## Phase-2 lock files
+The RFCs are now complemented by phase-2 implementation contracts in `docs/spec/`:
+- `MANIFEST-CONTRACT.md`
+- `RESULT-SCHEMA-CONTRACT.md`
+- `CLI-COMMAND-SPEC.md`
+- `PROFILE-CONTRACT.md`
+- `FIRST-THREE-SCENARIOS-BUILD-PACK.md`
+
+Read those before writing implementation code. The goal now is not more architecture prose. The goal is to ship work pack 1 cleanly.
