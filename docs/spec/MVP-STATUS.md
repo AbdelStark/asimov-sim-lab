@@ -18,9 +18,11 @@
 - checksummed asset manifest generation
 - MJCF inspect contract export for bodies, joints, actuators, sensors, mesh assets, concrete geoms, cameras, sites, passive joints, and declared XML mass totals
 - validation for mesh files, geom mesh references, actuator targets, sensor targets, joint ranges, built-in neutral preset, and local TOML presets
+- checksummed evidence bundle generation with manifest, inspect JSON, validation JSON, Markdown report, and bundle index
 - JSON-mode structured errors for recoverable domain failures
 - generated JSON Schemas in `docs/schemas/`
 - `make check` gate covering lockfile, format, lint, mypy, pytest, schema drift, build, and dependency audit
+- optional `make smoke-real` now exercises the evidence bundle path against a local upstream checkout
 - `AGENTS.md`, `CHANGELOG.md`, `LICENSE`, `.env.example`, and architecture/runbook documentation
 
 ## What is intentionally not real yet
@@ -36,7 +38,7 @@
 ## Current limitations
 
 - The MVP supports one source layout only.
-- JSON artifacts may contain absolute local paths and should be reviewed before publication.
+- JSON artifacts and evidence bundles may contain absolute local paths and should be reviewed before publication.
 - Real-upstream smoke is optional because CI cannot assume access to a local Asimov checkout.
 - Validation is XML-contract validation, not compiled MuJoCo physics validation.
 
@@ -45,6 +47,6 @@
 Alpha contract hardening:
 
 - document all public contract fields and warning/error codes
-- add a reproducible evidence-bundle command or script
-- keep optional real-upstream smoke output as a reviewable artifact
+- add a publication-safe evidence redaction/review guide
+- keep optional real-upstream smoke evidence as a reviewable artifact
 - define the viewer contract before adding any MuJoCo runtime surface

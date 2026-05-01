@@ -11,7 +11,8 @@ The MVP needs four result families:
 1. asset discovery / doctor
 2. inspection / model contract export
 3. validation
-4. structured domain errors for JSON-mode failures
+4. evidence bundle summaries
+5. structured domain errors for JSON-mode failures
 
 ## Shared envelope
 Every machine-readable result must include this top-level envelope:
@@ -120,6 +121,22 @@ class ValidationResult(ResultEnvelope):
     checked_paths: list[str]
 ```
 
+## Evidence bundle result contract
+```python
+class EvidenceArtifact(BaseModel):
+    artifact_type: str
+    relative_path: str
+    sha256: str
+    size_bytes: int
+
+class EvidenceBundleResult(ResultEnvelope):
+    command: Literal['evidence'] = 'evidence'
+    bundle_dir: str
+    artifacts: list[EvidenceArtifact]
+    validation_passed: bool
+    validation_issue_count: int
+```
+
 ## Doctor result contract
 ```python
 class DoctorCheck(BaseModel):
@@ -160,6 +177,7 @@ Every result must preserve enough provenance to answer:
 - `ok` + no errors -> exit code `0`
 - warnings only -> exit code `0`
 - validation or contract errors -> non-zero exit code
+- evidence bundle exits non-zero when bundled validation did not pass
 
 ## Non-goals
 - multi-version backward compatibility at v0 beyond explicit schema checks

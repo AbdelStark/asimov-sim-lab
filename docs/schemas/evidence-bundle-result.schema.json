@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "EvidenceArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_type": {
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "relative_path": {
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_type",
+        "relative_path",
+        "sha256",
+        "size_bytes"
+      ],
+      "title": "EvidenceArtifact",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "artifacts": {
+      "items": {
+        "$ref": "#/$defs/EvidenceArtifact"
+      },
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "bundle_dir": {
+      "title": "Bundle Dir",
+      "type": "string"
+    },
+    "command": {
+      "const": "evidence",
+      "default": "evidence",
+      "title": "Command",
+      "type": "string"
+    },
+    "generated_at_utc": {
+      "title": "Generated At Utc",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_manifest_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Manifest Path"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tool_version": {
+      "default": "0.1.0",
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "validation_issue_count": {
+      "title": "Validation Issue Count",
+      "type": "integer"
+    },
+    "validation_passed": {
+      "title": "Validation Passed",
+      "type": "boolean"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "bundle_dir",
+    "artifacts",
+    "validation_passed",
+    "validation_issue_count"
+  ],
+  "title": "EvidenceBundleResult",
+  "type": "object"
+}

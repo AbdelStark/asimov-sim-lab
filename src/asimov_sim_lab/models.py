@@ -85,6 +85,21 @@ class DoctorResult(ResultEnvelope):
     resolved_asset_root: str | None = None
 
 
+class EvidenceArtifact(StrictBaseModel):
+    artifact_type: str
+    relative_path: str
+    sha256: str
+    size_bytes: int
+
+
+class EvidenceBundleResult(ResultEnvelope):
+    command: Literal["evidence"] = "evidence"
+    bundle_dir: str
+    artifacts: list[EvidenceArtifact]
+    validation_passed: bool
+    validation_issue_count: int
+
+
 class MeshAssetContract(StrictBaseModel):
     name: str
     file: str

@@ -8,7 +8,7 @@ As of May 1, 2026, this project is an alpha MVP. It is suitable for local source
 
 ## Why It Exists
 
-The upstream Asimov v1 release contains useful MuJoCo assets, but raw XML and mesh files are hard to audit, diff, validate, and reuse safely. This repo turns that local source checkout into explicit contracts: asset manifests, model inspection JSON, validation results, Markdown reports, and JSON Schemas that future UI/report layers can trust.
+The upstream Asimov v1 release contains useful MuJoCo assets, but raw XML and mesh files are hard to audit, diff, validate, and reuse safely. This repo turns that local source checkout into explicit contracts: asset manifests, model inspection JSON, validation results, Markdown reports, checksummed evidence bundles, and JSON Schemas that future UI/report layers can trust.
 
 ## Who It Is For
 
@@ -80,6 +80,18 @@ uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --format
 uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --preset-dir docs/examples/presets --format json
 ```
 
+Generate a complete evidence bundle:
+
+```bash
+uv run asimov-sim-lab evidence \
+  --asset-root /absolute/path/to/asimov-v1 \
+  --output-dir .asimov-sim-lab/evidence \
+  --overwrite \
+  --format json
+```
+
+The bundle directory contains `asset-manifest.json`, `inspect-result.json`, `validation-result.json`, `inspect-report.md`, and `evidence-bundle.json`.
+
 Exit codes:
 
 - `0`: command succeeded, including warnings-only validation
@@ -93,6 +105,7 @@ JSON artifacts are the source of truth. Text and Markdown are renderings.
 
 - `docs/schemas/asset-manifest.schema.json`
 - `docs/schemas/doctor-result.schema.json`
+- `docs/schemas/evidence-bundle-result.schema.json`
 - `docs/schemas/error-result.schema.json`
 - `docs/schemas/inspect-result.schema.json`
 - `docs/schemas/validation-result.schema.json`
@@ -108,6 +121,7 @@ Core modules live in `src/asimov_sim_lab/`:
 - `inspect.py`: MJCF parsing and inspect-contract extraction
 - `validation.py`: reference, range, sensor, actuator, and preset validation
 - `presets.py`: built-in neutral preset and local TOML preset validation
+- `evidence.py`: checksummed evidence bundle generation
 - `models.py`: Pydantic public contracts and schema versions
 - `cli.py`: Typer command surface and output handling
 
@@ -147,7 +161,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/spec/PRODUCT-SPEC.md](docs/
 Next three milestones:
 
 - **M1: Alpha contract hardening.** Exit criteria: all public contract fields documented, schema drift enforced in CI, strict warning policy complete, optional real-upstream smoke documented.
-- **M2: Evidence bundle.** Exit criteria: one command emits a reproducible local evidence directory with manifest, inspect result, validation result, Markdown summary, and checksums.
+- **M2: Evidence review workflow.** Exit criteria: generated evidence bundles are documented as review artifacts, include an error-code registry, and can be attached to issue/PR reports without leaking unintended local paths.
 - **M3: Viewer contract preview.** Exit criteria: MuJoCo viewer support lives behind the `viewer` extra, loads only validated local assets, and has a typed failure model before any screenshot/capture command ships.
 
 ## Help

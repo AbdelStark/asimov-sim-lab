@@ -12,6 +12,7 @@ Contract-first. The MVP core is now implemented, so future work should harden co
 4. Generated and committed JSON Schemas from the Pydantic contracts.
 5. CI, Makefile, pre-commit, coverage, schema drift, build, and dependency audit gates.
 6. Optional real-upstream smoke gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
+7. Evidence bundle generation with checksummed manifest, inspect, validation, and Markdown artifacts.
 
 ## Current module ownership
 
@@ -22,6 +23,8 @@ Contract-first. The MVP core is now implemented, so future work should harden co
 - `inspect.py`: XML parsing and model contract extraction.
 - `validation.py`: validation issue generation.
 - `presets.py`: built-in neutral preset and local preset validation.
+- `artifacts.py`: atomic writes and checksum helpers.
+- `evidence.py`: evidence bundle generation.
 - `doctor.py`: layout/provenance/manifest health checks.
 - `cli.py`: command surface, output formats, atomic writes.
 - `scripts/generate_schemas.py`: schema generation.
@@ -34,11 +37,12 @@ Contract-first. The MVP core is now implemented, so future work should harden co
 - README never outruns shipped reality
 - JSON contracts remain the source of truth for future UI layers
 - schema changes are committed only with the code and tests that justify them
+- evidence bundles must list checksums for every generated review artifact
 
 ## Next implementation sequence
 
 1. Complete alpha contract hardening: public field docs, error-code registry, and stricter schema-version checks.
-2. Add evidence-bundle generation: manifest, inspect result, validation result, Markdown report, and checksums in one reproducible local directory.
+2. Add a publication-safe evidence review guide and error-code registry.
 3. Add a real-upstream smoke report format that remains optional but reviewable.
 4. Design the viewer/open contract as an RFC before adding MuJoCo runtime dependencies to default workflows.
 

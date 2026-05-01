@@ -13,6 +13,7 @@ All notable user-facing changes are recorded here.
 - Validation for supported layout, mesh file references, geom mesh references, actuator joint references, sensor targets, joint ranges, and presets.
 - Generated JSON Schemas for manifest, doctor, inspect, validation, and error results.
 - Deterministic Markdown inspect report derived from the JSON contract.
+- `evidence` command that writes a checksummed review bundle with manifest, inspect JSON, validation JSON, Markdown report, and bundle index.
 - Synthetic fixture test suite, coverage gate, schema drift check, build gate, and dependency audit gate.
 
 ### Fixed

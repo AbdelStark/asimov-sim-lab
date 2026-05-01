@@ -13,5 +13,6 @@ The first operator surface should be a direct, scriptable CLI rather than a GUI-
 - `doctor`
 - `inspect`
 - `validate`
+- `evidence`
 
-Deferred commands such as `open`, `capture`, or evidence-bundle export require their own contracts, tests, and schemas before they appear in the CLI.
+Deferred commands such as `open`, `capture`, or preset management require their own contracts, tests, and schemas before they appear in the CLI.

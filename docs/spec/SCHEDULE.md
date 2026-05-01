@@ -33,13 +33,14 @@ Status: complete for alpha MVP.
 - synthetic fixture coverage
 - CI and local quality gates
 - optional real-upstream smoke
+- checksummed evidence bundle command
 
 ## Phase 4 — Alpha hardening
 
 Status: next.
 
 - public field and error-code documentation
-- reproducible evidence bundle
+- publication-safe evidence review guidance
 - optional real-upstream smoke report artifact
 - stronger schema-version compatibility checks
 - dependency and release-readiness review

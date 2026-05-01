@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import hashlib
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from asimov_sim_lab.artifacts import sha256_file
 from asimov_sim_lab.errors import LabError
 from asimov_sim_lab.models import AssetManifest, MeshEntry, XmlEntry
 from asimov_sim_lab.paths import (
@@ -45,7 +45,7 @@ def generate_asset_manifest(resolution: AssetRootResolution) -> AssetManifest:
     meshes = [
         MeshEntry(
             relative_path=_relative(asset_root, path),
-            sha256=_sha256(path),
+            sha256=sha256_file(path),
             size_bytes=path.stat().st_size,
             referenced_by=sorted(referenced.get(path.name, [])),
         )
@@ -56,7 +56,7 @@ def generate_asset_manifest(resolution: AssetRootResolution) -> AssetManifest:
         source=source,
         primary_xml=XmlEntry(
             relative_path=str(PRIMARY_XML),
-            sha256=_sha256(primary_xml_path),
+            sha256=sha256_file(primary_xml_path),
             size_bytes=primary_xml_path.stat().st_size,
         ),
         meshes=meshes,
@@ -90,22 +90,6 @@ def _mesh_file_references(primary_xml_path: Path) -> tuple[dict[str, list[str]],
             continue
         references.setdefault(file_name, []).append(mesh_name)
     return references, []
-
-
-def _sha256(path: Path) -> str:
-    hasher = hashlib.sha256()
-    try:
-        with path.open("rb") as handle:
-            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                hasher.update(chunk)
-    except OSError as exc:
-        raise LabError(
-            "CHECKSUM_COMPUTE_FAILED",
-            f"Could not compute checksum for {path}: {exc}",
-            "Check file permissions and rerun the command.",
-            exit_code=3,
-        ) from exc
-    return hasher.hexdigest()
 
 
 def _relative(root: Path, path: Path) -> str:

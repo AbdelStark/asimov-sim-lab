@@ -10,6 +10,7 @@ asimov-sim-lab inspect
 asimov-sim-lab inspect --json
 asimov-sim-lab inspect --markdown
 asimov-sim-lab validate
+asimov-sim-lab evidence
 ```
 
 ## Global rules
@@ -25,6 +26,7 @@ asimov-sim-lab validate
 --profile PATH            Optional lab profile file
 --output PATH             File output path for JSON/Markdown artifacts
 --manifest-output PATH    Optional persisted asset-manifest path
+--output-dir PATH         Evidence bundle directory for `evidence`
 --format [text|json]      When supported by the command
 --strict / --no-strict    Escalate warnings into failures where applicable
 ```
@@ -97,6 +99,25 @@ Example:
 ```bash
 asimov-sim-lab validate --asset-root /path/to/asimov-v1 --format json
 asimov-sim-lab validate --asset-root /path/to/asimov-v1 --preset-dir ./presets --format json
+```
+
+## `evidence`
+Purpose:
+- produce one reviewable artifact directory for source provenance, model inspection, validation, and Markdown summary
+- make every artifact checksum explicit
+- keep local generated evidence under an operator-chosen directory
+
+Expected behavior:
+- requires `--output-dir`
+- refuses non-empty output directories unless `--overwrite` is passed
+- writes `asset-manifest.json`, `inspect-result.json`, `validation-result.json`, `inspect-report.md`, and `evidence-bundle.json`
+- exits `0` when validation passes, including warnings-only validation
+- exits non-zero when validation produces error-severity issues
+- `--format json` emits `EvidenceBundleResult`
+
+Example:
+```bash
+asimov-sim-lab evidence --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --overwrite --format json
 ```
 
 ## Deferred commands

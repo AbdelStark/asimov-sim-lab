@@ -2,20 +2,21 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Annotated, Literal
 
 import typer
 
+from asimov_sim_lab.artifacts import write_text_atomic
 from asimov_sim_lab.doctor import run_doctor
 from asimov_sim_lab.errors import LabError
+from asimov_sim_lab.evidence import generate_evidence_bundle
 from asimov_sim_lab.inspect import inspect_model, render_inspect_markdown
 from asimov_sim_lab.manifest import generate_asset_manifest
 from asimov_sim_lab.models import (
     DoctorResult,
     ErrorResult,
+    EvidenceBundleResult,
     InspectResult,
     Status,
     ValidationIssue,
@@ -177,6 +178,59 @@ def validate(
         _handle_error(exc, command="validate", output_format=output_format, output=output)
 
 
+@app.command()
+def evidence(
+    asset_root: Annotated[
+        Path | None, typer.Option("--asset-root", help="Upstream Asimov repo root.")
+    ] = None,
+    profile: Annotated[
+        Path | None, typer.Option("--profile", help="Optional local profile TOML.")
+    ] = None,
+    output_dir: Annotated[
+        Path | None, typer.Option("--output-dir", help="Directory for evidence artifacts.")
+    ] = None,
+    preset_dir: Annotated[
+        Path | None, typer.Option("--preset-dir", help="Optional local preset directory.")
+    ] = None,
+    output_format: Annotated[
+        str, typer.Option("--format", help="Output format: text or json.")
+    ] = "text",
+    strict: Annotated[
+        bool, typer.Option("--strict/--no-strict", help="Escalate evidence warnings.")
+    ] = False,
+    overwrite: Annotated[
+        bool, typer.Option("--overwrite/--no-overwrite", help="Replace known bundle artifacts.")
+    ] = False,
+) -> None:
+    """Generate a checksummed evidence bundle directory."""
+    if output_format not in {"text", "json"}:
+        _usage_error("evidence supports --format text|json")
+    if output_dir is None:
+        _usage_error("evidence requires --output-dir")
+    assert output_dir is not None
+    try:
+        resolution = resolve_asset_root(asset_root=asset_root, profile_path=profile, strict=strict)
+        effective_strict = strict or bool(
+            resolution.profile and resolution.profile.strict_validation
+        )
+        result = generate_evidence_bundle(
+            resolution,
+            output_dir=output_dir,
+            preset_dir=preset_dir,
+            strict=effective_strict,
+            overwrite=overwrite,
+        )
+        payload = (
+            result.model_dump_json(indent=2) + "\n"
+            if output_format == "json"
+            else _evidence_text(result)
+        )
+        _emit(payload, None)
+        raise typer.Exit(0 if result.validation_passed else 1)
+    except LabError as exc:
+        _handle_error(exc, command="evidence", output_format=output_format, output=None)
+
+
 def _resolve_inspect_format(
     output_format: str, *, json_output: bool, markdown: bool
 ) -> OutputFormat:
@@ -242,29 +296,7 @@ def _emit(payload: str, output: Path | None) -> None:
 
 
 def _write_text(path: Path, content: str) -> None:
-    if path.exists() and path.is_dir():
-        raise LabError(
-            "OUTPUT_PATH_IS_DIRECTORY",
-            f"Output path is a directory: {path}",
-            "Pass a file path for --output or --manifest-output.",
-            exit_code=2,
-        )
-    temporary: Path | None = None
-    try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with NamedTemporaryFile("w", encoding="utf-8", delete=False, dir=path.parent) as handle:
-            handle.write(content)
-            temporary = Path(handle.name)
-        os.replace(temporary, path)
-    except OSError as exc:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
-        raise LabError(
-            "OUTPUT_WRITE_FAILED",
-            f"Could not write output path: {path}: {exc}",
-            "Check directory permissions and available disk space.",
-            exit_code=2,
-        ) from exc
+    write_text_atomic(path, content)
 
 
 def _doctor_text(result: DoctorResult) -> str:
@@ -301,6 +333,22 @@ def _validation_text(result: ValidationResult) -> str:
     ]
     for issue in result.issues:
         lines.append(f"{issue.severity}: {issue.code}: {issue.message}")
+    return "\n".join(lines) + "\n"
+
+
+def _evidence_text(result: EvidenceBundleResult) -> str:
+    lines = [
+        f"status: {result.status}",
+        f"validation_passed: {result.validation_passed}",
+        f"validation_issue_count: {result.validation_issue_count}",
+        f"bundle_dir: {result.bundle_dir}",
+    ]
+    for artifact in result.artifacts:
+        lines.append(
+            f"artifact: {artifact.artifact_type} {artifact.relative_path} sha256={artifact.sha256}"
+        )
+    for warning in result.warnings:
+        lines.append(f"warning: {warning}")
     return "\n".join(lines) + "\n"
 
 

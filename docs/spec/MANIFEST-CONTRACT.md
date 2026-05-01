@@ -8,7 +8,8 @@ This contract defines the machine-readable manifest that every serious command w
 - `doctor`
 - `inspect`
 - `validate`
-- future `open`, `capture`, and evidence-bundle commands
+- `evidence`
+- future `open` and `capture`
 
 The manifest is the repo's first trust boundary. If the manifest is incomplete or stale, downstream reports must say so loudly.
 

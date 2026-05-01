@@ -21,6 +21,7 @@ CLI-first Python package with a narrow public Python API, schema-backed JSON out
 - generate a fresh asset manifest with checksums and provenance
 - export a concrete MJCF model contract
 - validate mesh, actuator, sensor, joint-range, and preset references
+- generate a checksummed evidence bundle for review
 - publish committed JSON Schemas for result artifacts
 - prove happy and broken paths with tiny synthetic fixtures
 - keep public docs aligned with shipped behavior
@@ -54,6 +55,7 @@ asimov-sim-lab doctor --asset-root /path/to/asimov-v1 --format json
 asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --json
 asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --markdown
 asimov-sim-lab validate --asset-root /path/to/asimov-v1 --format json
+asimov-sim-lab evidence --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --format json
 ```
 
 Asset-root precedence:
@@ -71,6 +73,7 @@ Committed schemas:
 
 - `docs/schemas/asset-manifest.schema.json`
 - `docs/schemas/doctor-result.schema.json`
+- `docs/schemas/evidence-bundle-result.schema.json`
 - `docs/schemas/error-result.schema.json`
 - `docs/schemas/inspect-result.schema.json`
 - `docs/schemas/validation-result.schema.json`
@@ -123,6 +126,18 @@ MVP presets are TOML only. The package ships an inferred built-in `neutral` pres
 
 Additional local presets can be validated from a directory, one preset per TOML file.
 
+## Evidence Bundle Contract
+
+`evidence` writes a reviewable local directory containing:
+
+- `asset-manifest.json`
+- `inspect-result.json`
+- `validation-result.json`
+- `inspect-report.md`
+- `evidence-bundle.json`
+
+`evidence-bundle.json` records each artifact's relative path, type, size, and SHA-256 digest. The command refuses a non-empty output directory unless `--overwrite` is passed, so stale files do not silently mix with fresh evidence.
+
 ## Architecture
 
 ```text
@@ -144,6 +159,8 @@ asimov-sim-lab/
 │   ├── models.py
 │   ├── paths.py
 │   ├── presets.py
+│   ├── artifacts.py
+│   ├── evidence.py
 │   └── validation.py
 └── tests/
     └── fixtures/

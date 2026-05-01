@@ -13,6 +13,7 @@ from asimov_sim_lab.models import (
     AssetManifest,
     DoctorResult,
     ErrorResult,
+    EvidenceBundleResult,
     InspectResult,
     ValidationResult,
 )
@@ -22,6 +23,7 @@ SCHEMA_DIR = ROOT / "docs" / "schemas"
 SCHEMAS = {
     "asset-manifest.schema.json": AssetManifest,
     "doctor-result.schema.json": DoctorResult,
+    "evidence-bundle-result.schema.json": EvidenceBundleResult,
     "error-result.schema.json": ErrorResult,
     "inspect-result.schema.json": InspectResult,
     "validation-result.schema.json": ValidationResult,
