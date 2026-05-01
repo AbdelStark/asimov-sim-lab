@@ -10,7 +10,9 @@ asimov-sim-lab inspect
 asimov-sim-lab inspect --json
 asimov-sim-lab inspect --markdown
 asimov-sim-lab validate
+asimov-sim-lab runtime-smoke
 asimov-sim-lab evidence
+asimov-sim-lab export
 ```
 
 ## Global rules
@@ -26,9 +28,10 @@ asimov-sim-lab evidence
 --profile PATH            Optional lab profile file
 --output PATH             File output path for JSON/Markdown artifacts
 --manifest-output PATH    Optional persisted asset-manifest path
---output-dir PATH         Evidence bundle directory for `evidence`
+--output-dir PATH         Artifact directory for `evidence` or `export`
 --format [text|json]      When supported by the command
 --strict / --no-strict    Escalate warnings into failures where applicable
+--overwrite / --no-overwrite
 ```
 
 Asset-root precedence:
@@ -103,14 +106,14 @@ asimov-sim-lab validate --asset-root /path/to/asimov-v1 --preset-dir ./presets -
 
 ## `evidence`
 Purpose:
-- produce one reviewable artifact directory for source provenance, model inspection, validation, and Markdown summary
+- produce one reviewable artifact directory for source provenance, model inspection, validation, runtime smoke, and Markdown summary
 - make every artifact checksum explicit
 - keep local generated evidence under an operator-chosen directory
 
 Expected behavior:
 - requires `--output-dir`
 - refuses non-empty output directories unless `--overwrite` is passed
-- writes `asset-manifest.json`, `inspect-result.json`, `validation-result.json`, `inspect-report.md`, and `evidence-bundle.json`
+- writes `asset-manifest.json`, `inspect-result.json`, `validation-result.json`, `runtime-smoke-result.json`, `inspect-report.md`, and `evidence-bundle.json`
 - exits `0` when validation passes, including warnings-only validation
 - exits non-zero when validation produces error-severity issues
 - `--format json` emits `EvidenceBundleResult`
@@ -118,6 +121,43 @@ Expected behavior:
 Example:
 ```bash
 asimov-sim-lab evidence --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --overwrite --format json
+```
+
+## `runtime-smoke`
+Purpose:
+- verify that the optional MuJoCo Python runtime can compile the canonical MJCF
+- expose runtime availability as a typed result instead of an implicit import failure
+
+Expected behavior:
+- exits `0` with `status=warning` and `skipped=true` when MuJoCo is missing by default
+- exits non-zero with `MUJOCO_NOT_INSTALLED` when `--require-mujoco` is passed and MuJoCo is missing
+- exits non-zero with `MUJOCO_MODEL_LOAD_FAILED` when MuJoCo is installed but cannot compile the XML
+- `--format json` emits `RuntimeSmokeResult`
+- does not open a viewer, step simulation, evaluate controllers, or make hardware-fidelity claims
+
+Example:
+```bash
+asimov-sim-lab runtime-smoke --asset-root /path/to/asimov-v1 --allow-missing-mujoco --format json
+asimov-sim-lab runtime-smoke --asset-root /path/to/asimov-v1 --require-mujoco --format json
+```
+
+## `export`
+Purpose:
+- generate a portable evidence directory and deterministic `tar.gz` archive for review or CI retention
+- link archive checksums to the generated evidence bundle
+- avoid embedding local output-directory paths inside archive contents
+
+Expected behavior:
+- requires `--output-dir`
+- refuses non-empty output directories unless `--overwrite` is passed
+- writes `evidence/`, `export-package-manifest.json`, `export-package-result.json`, and `<package-name>.tar.gz`
+- normalizes generated timestamps and archive metadata by default
+- validates `--package-name` as a safe file-name stem
+- `--format json` emits `ExportPackageResult`
+
+Example:
+```bash
+asimov-sim-lab export --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-lab/export --overwrite --format json
 ```
 
 ## Deferred commands

@@ -33,5 +33,25 @@ jobs:
       - run: uv run python scripts/generate_schemas.py
       - run: git diff --exit-code -- docs/schemas
       - run: uv run pytest
+      - name: Build fixture evidence artifacts
+        run: |
+          uv run asimov-sim-lab evidence \
+            --asset-root tests/fixtures/source_roots/minimal_valid \
+            --output-dir .asimov-sim-lab/ci-evidence \
+            --overwrite \
+            --format json
+          uv run asimov-sim-lab export \
+            --asset-root tests/fixtures/source_roots/minimal_valid \
+            --output-dir .asimov-sim-lab/ci-export \
+            --overwrite \
+            --format json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evidence-python-${{ matrix.python-version }}
+          path: |
+            .asimov-sim-lab/ci-evidence
+            .asimov-sim-lab/ci-export
+          if-no-files-found: error
+          retention-days: 14
       - run: uv build
       - run: uv run pip-audit --skip-editable

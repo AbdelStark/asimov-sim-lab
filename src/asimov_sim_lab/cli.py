@@ -11,18 +11,22 @@ from asimov_sim_lab.artifacts import write_text_atomic
 from asimov_sim_lab.doctor import run_doctor
 from asimov_sim_lab.errors import LabError
 from asimov_sim_lab.evidence import generate_evidence_bundle
+from asimov_sim_lab.export import DEFAULT_PACKAGE_NAME, generate_export_package
 from asimov_sim_lab.inspect import inspect_model, render_inspect_markdown
 from asimov_sim_lab.manifest import generate_asset_manifest
 from asimov_sim_lab.models import (
     DoctorResult,
     ErrorResult,
     EvidenceBundleResult,
+    ExportPackageResult,
     InspectResult,
+    RuntimeSmokeResult,
     Status,
     ValidationIssue,
     ValidationResult,
 )
 from asimov_sim_lab.paths import resolve_asset_root
+from asimov_sim_lab.runtime import run_runtime_smoke
 from asimov_sim_lab.validation import validate_model
 
 app = typer.Typer(
@@ -231,6 +235,115 @@ def evidence(
         _handle_error(exc, command="evidence", output_format=output_format, output=None)
 
 
+@app.command("runtime-smoke")
+def runtime_smoke(
+    asset_root: Annotated[
+        Path | None, typer.Option("--asset-root", help="Upstream Asimov repo root.")
+    ] = None,
+    profile: Annotated[
+        Path | None, typer.Option("--profile", help="Optional local profile TOML.")
+    ] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", help="Write primary result artifact.")
+    ] = None,
+    output_format: Annotated[
+        str, typer.Option("--format", help="Output format: text or json.")
+    ] = "text",
+    require_mujoco: Annotated[
+        bool,
+        typer.Option(
+            "--require-mujoco/--allow-missing-mujoco",
+            help="Fail when the optional MuJoCo runtime is not installed.",
+        ),
+    ] = False,
+    strict: Annotated[
+        bool, typer.Option("--strict/--no-strict", help="Escalate source warnings.")
+    ] = False,
+) -> None:
+    """Load the canonical MJCF through the optional MuJoCo runtime."""
+    if output_format not in {"text", "json"}:
+        _usage_error("runtime-smoke supports --format text|json")
+    try:
+        resolution = resolve_asset_root(asset_root=asset_root, profile_path=profile, strict=strict)
+        result = run_runtime_smoke(resolution, require_mujoco=require_mujoco)
+        payload = (
+            result.model_dump_json(indent=2) + "\n"
+            if output_format == "json"
+            else _runtime_smoke_text(result)
+        )
+        _emit(payload, output)
+        raise typer.Exit(0 if result.status != "error" else 1)
+    except LabError as exc:
+        _handle_error(exc, command="runtime-smoke", output_format=output_format, output=output)
+
+
+@app.command("export")
+def export_command(
+    asset_root: Annotated[
+        Path | None, typer.Option("--asset-root", help="Upstream Asimov repo root.")
+    ] = None,
+    profile: Annotated[
+        Path | None, typer.Option("--profile", help="Optional local profile TOML.")
+    ] = None,
+    output_dir: Annotated[
+        Path | None, typer.Option("--output-dir", help="Directory for export package artifacts.")
+    ] = None,
+    preset_dir: Annotated[
+        Path | None, typer.Option("--preset-dir", help="Optional local preset directory.")
+    ] = None,
+    package_name: Annotated[
+        str, typer.Option("--package-name", help="Base file name for the export archive.")
+    ] = DEFAULT_PACKAGE_NAME,
+    output_format: Annotated[
+        str, typer.Option("--format", help="Output format: text or json.")
+    ] = "text",
+    strict: Annotated[
+        bool, typer.Option("--strict/--no-strict", help="Escalate evidence warnings.")
+    ] = False,
+    overwrite: Annotated[
+        bool, typer.Option("--overwrite/--no-overwrite", help="Replace generated artifacts.")
+    ] = False,
+    deterministic: Annotated[
+        bool,
+        typer.Option(
+            "--deterministic/--no-deterministic",
+            help="Normalize timestamps and archive metadata for reproducible package bytes.",
+        ),
+    ] = True,
+) -> None:
+    """Generate a deterministic evidence export archive."""
+    if output_format not in {"text", "json"}:
+        _usage_error("export supports --format text|json")
+    if output_dir is None:
+        _usage_error("export requires --output-dir")
+    assert output_dir is not None
+    try:
+        resolution = resolve_asset_root(asset_root=asset_root, profile_path=profile, strict=strict)
+        effective_strict = strict or bool(
+            resolution.profile and resolution.profile.strict_validation
+        )
+        result = generate_export_package(
+            resolution,
+            output_dir=output_dir,
+            preset_dir=preset_dir,
+            strict=effective_strict,
+            overwrite=overwrite,
+            package_name=package_name,
+            deterministic=deterministic,
+        )
+        payload = (
+            result.model_dump_json(indent=2) + "\n"
+            if output_format == "json"
+            else _export_text(result)
+        )
+        _emit(payload, None)
+        raise typer.Exit(
+            0 if result.validation_passed and result.runtime_smoke_status != "error" else 1
+        )
+    except LabError as exc:
+        _handle_error(exc, command="export", output_format=output_format, output=None)
+
+
 def _resolve_inspect_format(
     output_format: str, *, json_output: bool, markdown: bool
 ) -> OutputFormat:
@@ -341,12 +454,56 @@ def _evidence_text(result: EvidenceBundleResult) -> str:
         f"status: {result.status}",
         f"validation_passed: {result.validation_passed}",
         f"validation_issue_count: {result.validation_issue_count}",
+        f"runtime_smoke_status: {result.runtime_smoke_status}",
+        f"runtime_smoke_skipped: {result.runtime_smoke_skipped}",
         f"bundle_dir: {result.bundle_dir}",
     ]
     for artifact in result.artifacts:
         lines.append(
             f"artifact: {artifact.artifact_type} {artifact.relative_path} sha256={artifact.sha256}"
         )
+    for warning in result.warnings:
+        lines.append(f"warning: {warning}")
+    return "\n".join(lines) + "\n"
+
+
+def _runtime_smoke_text(result: RuntimeSmokeResult) -> str:
+    lines = [
+        f"status: {result.status}",
+        f"runtime_available: {result.runtime_available}",
+        f"skipped: {result.skipped}",
+        f"loaded: {result.loaded}",
+        f"xml_path: {result.xml_path}",
+    ]
+    if result.runtime_version is not None:
+        lines.append(f"runtime_version: {result.runtime_version}")
+    if result.model_counts is not None:
+        lines.append(
+            "model_counts: "
+            f"nbody={result.model_counts.nbody} "
+            f"njnt={result.model_counts.njnt} "
+            f"nu={result.model_counts.nu} "
+            f"nsensor={result.model_counts.nsensor} "
+            f"ngeom={result.model_counts.ngeom} "
+            f"nmesh={result.model_counts.nmesh}"
+        )
+    if result.failure_code is not None:
+        lines.append(f"failure: {result.failure_code}: {result.failure_message or ''}")
+    for warning in result.warnings:
+        lines.append(f"warning: {warning}")
+    return "\n".join(lines) + "\n"
+
+
+def _export_text(result: ExportPackageResult) -> str:
+    lines = [
+        f"status: {result.status}",
+        f"validation_passed: {result.validation_passed}",
+        f"runtime_smoke_status: {result.runtime_smoke_status}",
+        f"runtime_smoke_skipped: {result.runtime_smoke_skipped}",
+        f"archive_path: {result.archive_path}",
+        f"archive_sha256: {result.archive_sha256}",
+        f"evidence_bundle_path: {result.evidence_bundle_path}",
+    ]
     for warning in result.warnings:
         lines.append(f"warning: {warning}")
     return "\n".join(lines) + "\n"

@@ -29,6 +29,11 @@ def sha256_file(path: Path) -> str:
 
 def write_text_atomic(path: Path, content: str) -> None:
     """Write UTF-8 text through a temp file and atomic replace."""
+    write_bytes_atomic(path, content.encode("utf-8"))
+
+
+def write_bytes_atomic(path: Path, content: bytes) -> None:
+    """Write bytes through a temp file and atomic replace."""
     if path.exists() and path.is_dir():
         raise LabError(
             "OUTPUT_PATH_IS_DIRECTORY",
@@ -39,7 +44,7 @@ def write_text_atomic(path: Path, content: str) -> None:
     temporary: Path | None = None
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        with NamedTemporaryFile("w", encoding="utf-8", delete=False, dir=path.parent) as handle:
+        with NamedTemporaryFile("wb", delete=False, dir=path.parent) as handle:
             handle.write(content)
             temporary = Path(handle.name)
         os.replace(temporary, path)

@@ -34,6 +34,9 @@ Status: complete for alpha MVP.
 - CI and local quality gates
 - optional real-upstream smoke
 - checksummed evidence bundle command
+- optional MuJoCo runtime-smoke command
+- deterministic export package command
+- CI fixture evidence/export artifact retention
 
 ## Phase 4 — Alpha hardening
 
@@ -41,7 +44,7 @@ Status: next.
 
 - public field and error-code documentation
 - publication-safe evidence review guidance
-- optional real-upstream smoke report artifact
+- release-candidate evidence policy for retained CI artifacts and real-upstream export packages
 - stronger schema-version compatibility checks
 - dependency and release-readiness review
 

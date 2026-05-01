@@ -6,7 +6,7 @@ Turn a local Asimov v1 MuJoCo checkout into a serious developer-facing inspectio
 
 ## Product shape
 
-CLI-first Python package with a narrow public Python API, schema-backed JSON outputs, deterministic Markdown inspection reports, and optional future MuJoCo viewer support behind a `viewer` extra.
+CLI-first Python package with a narrow public Python API, schema-backed JSON outputs, deterministic Markdown inspection reports, optional MuJoCo runtime smoke behind a `viewer` extra, deterministic evidence export packages, and optional future MuJoCo viewer support.
 
 ## Users
 
@@ -21,7 +21,8 @@ CLI-first Python package with a narrow public Python API, schema-backed JSON out
 - generate a fresh asset manifest with checksums and provenance
 - export a concrete MJCF model contract
 - validate mesh, actuator, sensor, joint-range, and preset references
-- generate a checksummed evidence bundle for review
+- run a dependency-gated MuJoCo model-compile smoke check when the optional runtime is installed
+- generate a checksummed evidence bundle and deterministic export package for review
 - publish committed JSON Schemas for result artifacts
 - prove happy and broken paths with tiny synthetic fixtures
 - keep public docs aligned with shipped behavior
@@ -55,7 +56,9 @@ asimov-sim-lab doctor --asset-root /path/to/asimov-v1 --format json
 asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --json
 asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --markdown
 asimov-sim-lab validate --asset-root /path/to/asimov-v1 --format json
+asimov-sim-lab runtime-smoke --asset-root /path/to/asimov-v1 --allow-missing-mujoco --format json
 asimov-sim-lab evidence --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --format json
+asimov-sim-lab export --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-lab/export --format json
 ```
 
 Asset-root precedence:
@@ -75,7 +78,10 @@ Committed schemas:
 - `docs/schemas/doctor-result.schema.json`
 - `docs/schemas/evidence-bundle-result.schema.json`
 - `docs/schemas/error-result.schema.json`
+- `docs/schemas/export-package-manifest.schema.json`
+- `docs/schemas/export-package-result.schema.json`
 - `docs/schemas/inspect-result.schema.json`
+- `docs/schemas/runtime-smoke-result.schema.json`
 - `docs/schemas/validation-result.schema.json`
 
 Every result includes schema version, tool version, generated timestamp, command, status, warnings, and enough provenance to identify the local source checkout.
@@ -116,6 +122,12 @@ Warnings do not fail by default. `--strict` escalates defined evidence-quality w
 
 Malformed XML, unsupported mesh directories, malformed numeric attributes, and malformed boolean attributes fail before partial inspect contracts are emitted.
 
+## Runtime Smoke Contract
+
+`runtime-smoke` imports MuJoCo only when it is installed and attempts to compile `sim-model/xmls/asimov.xml`. Missing MuJoCo is a warning by default and an error with `--require-mujoco`.
+
+The command records runtime availability, runtime version when available, loaded/skipped state, compiled model counts, elapsed time, and typed failure metadata. It does not open a viewer, step simulation, validate controller behavior, or make hardware-fidelity claims.
+
 ## Presets
 
 MVP presets are TOML only. The package ships an inferred built-in `neutral` preset:
@@ -133,10 +145,22 @@ Additional local presets can be validated from a directory, one preset per TOML 
 - `asset-manifest.json`
 - `inspect-result.json`
 - `validation-result.json`
+- `runtime-smoke-result.json`
 - `inspect-report.md`
 - `evidence-bundle.json`
 
 `evidence-bundle.json` records each artifact's relative path, type, size, and SHA-256 digest. The command refuses a non-empty output directory unless `--overwrite` is passed, so stale files do not silently mix with fresh evidence.
+
+## Export Package Contract
+
+`export` writes:
+
+- `evidence/`
+- `export-package-manifest.json`
+- `export-package-result.json`
+- `asimov-sim-lab-evidence.tar.gz` by default
+
+The archive includes the portable evidence directory and package manifest. Deterministic mode is enabled by default and normalizes generated timestamps, evidence bundle output paths, tar metadata, gzip metadata, and owner IDs. `export-package-result.json` records the archive checksum and links back to `evidence/evidence-bundle.json`.
 
 ## Architecture
 
@@ -154,11 +178,13 @@ asimov-sim-lab/
 │   ├── config.py
 │   ├── doctor.py
 │   ├── errors.py
+│   ├── export.py
 │   ├── inspect.py
 │   ├── manifest.py
 │   ├── models.py
 │   ├── paths.py
 │   ├── presets.py
+│   ├── runtime.py
 │   ├── artifacts.py
 │   ├── evidence.py
 │   └── validation.py
@@ -177,12 +203,12 @@ asimov-sim-lab/
 - `uv build`
 - `uv run pip-audit --skip-editable`
 
-CI uses synthetic fixtures only. Real upstream smoke is optional and gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
+CI uses synthetic fixtures only, generates retained fixture evidence/export artifacts, and does not require MuJoCo. Real upstream smoke is optional and gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
 
 ## Deferred V1 Surface
 
 - local MuJoCo `open` command
 - capture/screenshot/video contracts
 - report viewer or UI
-- richer physical summaries from compiled MuJoCo state
+- simulation stepping or richer physical summaries from compiled MuJoCo state
 - issue bundle generation

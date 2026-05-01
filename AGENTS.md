@@ -9,7 +9,7 @@ Asimov Sim Lab is a Python CLI and library that inspects and validates a local A
 ## Current State
 
 - Stage: alpha MVP.
-- Shipped commands: `doctor`, `inspect`, `validate`, `evidence`.
+- Shipped commands: `doctor`, `inspect`, `validate`, `runtime-smoke`, `evidence`, `export`.
 - Source strategy: local checkout only. No automatic download and no vendored upstream assets.
 - Public contracts: Pydantic models in `src/asimov_sim_lab/models.py` and generated JSON Schemas in `docs/schemas/`.
 - Deferred: viewer/open, capture/screenshot/video, UI, controllers, policy training, hardware or manufacturing claims.
@@ -23,7 +23,9 @@ Asimov Sim Lab is a Python CLI and library that inspects and validates a local A
 - `src/asimov_sim_lab/inspect.py`: MJCF parsing and inspect-contract extraction.
 - `src/asimov_sim_lab/validation.py`: validation issue generation.
 - `src/asimov_sim_lab/presets.py`: built-in neutral preset and local preset validation.
+- `src/asimov_sim_lab/runtime.py`: optional MuJoCo compiled-runtime smoke checks.
 - `src/asimov_sim_lab/evidence.py`: checksummed evidence bundle generation.
+- `src/asimov_sim_lab/export.py`: deterministic export package generation.
 - `src/asimov_sim_lab/artifacts.py`: atomic artifact writes and SHA-256 helpers.
 - `src/asimov_sim_lab/models.py`: public result contracts.
 - `scripts/generate_schemas.py`: schema generation from public contracts.
@@ -73,7 +75,9 @@ Manual CLI smoke:
 uv run asimov-sim-lab doctor --asset-root /absolute/path/to/asimov-v1 --format json
 uv run asimov-sim-lab inspect --asset-root /absolute/path/to/asimov-v1 --json
 uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --format json
+uv run asimov-sim-lab runtime-smoke --asset-root /absolute/path/to/asimov-v1 --allow-missing-mujoco --format json
 uv run asimov-sim-lab evidence --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --overwrite --format json
+uv run asimov-sim-lab export --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/export --overwrite --format json
 ```
 
 Optional real-upstream smoke:
@@ -91,6 +95,8 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 - Make validation issues actionable with a clear message and remediation when possible.
 - Keep local paths and generated evidence out of public docs unless intentionally documented.
 - Evidence bundles are review artifacts; inspect `evidence-bundle.json` and local paths before publishing.
+- Export packages normalize evidence bundle paths and archive metadata by default; do not add local absolute output paths to archive contents.
+- `runtime-smoke` only proves optional MuJoCo model compilation, not simulation correctness, control quality, or hardware fidelity.
 - Keep docs aligned with shipped behavior. Do not describe deferred commands as implemented.
 
 ## Critical Constraints

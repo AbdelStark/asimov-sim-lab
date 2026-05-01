@@ -92,12 +92,74 @@ class EvidenceArtifact(StrictBaseModel):
     size_bytes: int
 
 
+class RuntimeModelCounts(StrictBaseModel):
+    nbody: int
+    njnt: int
+    nu: int
+    nsensor: int
+    ngeom: int
+    nmesh: int
+    nq: int
+    nv: int
+
+
+class RuntimeSmokeResult(ResultEnvelope):
+    command: Literal["runtime-smoke"] = "runtime-smoke"
+    runtime: Literal["mujoco"] = "mujoco"
+    runtime_available: bool
+    runtime_version: str | None = None
+    skipped: bool
+    loaded: bool
+    xml_path: str
+    model_counts: RuntimeModelCounts | None = None
+    elapsed_ms: float | None = None
+    failure_code: str | None = None
+    failure_message: str | None = None
+    failure_remediation: str | None = None
+
+
 class EvidenceBundleResult(ResultEnvelope):
     command: Literal["evidence"] = "evidence"
     bundle_dir: str
     artifacts: list[EvidenceArtifact]
     validation_passed: bool
     validation_issue_count: int
+    runtime_smoke_status: Status
+    runtime_smoke_skipped: bool
+
+
+class ExportPackageFile(StrictBaseModel):
+    relative_path: str
+    sha256: str
+    size_bytes: int
+
+
+class ExportPackageManifest(StrictBaseModel):
+    schema_version: str = SCHEMA_VERSION
+    generated_at_utc: str = Field(default_factory=utc_now)
+    generator_version: str = __version__
+    evidence_bundle_path: str
+    evidence_bundle_sha256: str
+    evidence_artifacts: list[EvidenceArtifact]
+    package_files: list[ExportPackageFile]
+    deterministic: bool
+
+
+class ExportPackageResult(ResultEnvelope):
+    command: Literal["export"] = "export"
+    package_dir: str
+    archive_path: str
+    archive_sha256: str
+    archive_size_bytes: int
+    evidence_bundle_path: str
+    evidence_bundle_sha256: str
+    package_manifest_path: str
+    package_manifest_sha256: str
+    deterministic: bool
+    validation_passed: bool
+    validation_issue_count: int
+    runtime_smoke_status: Status
+    runtime_smoke_skipped: bool
 
 
 class MeshAssetContract(StrictBaseModel):

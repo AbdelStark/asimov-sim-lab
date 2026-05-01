@@ -14,7 +14,10 @@ from asimov_sim_lab.models import (
     DoctorResult,
     ErrorResult,
     EvidenceBundleResult,
+    ExportPackageManifest,
+    ExportPackageResult,
     InspectResult,
+    RuntimeSmokeResult,
     ValidationResult,
 )
 
@@ -25,7 +28,10 @@ SCHEMAS = {
     "doctor-result.schema.json": DoctorResult,
     "evidence-bundle-result.schema.json": EvidenceBundleResult,
     "error-result.schema.json": ErrorResult,
+    "export-package-manifest.schema.json": ExportPackageManifest,
+    "export-package-result.schema.json": ExportPackageResult,
     "inspect-result.schema.json": InspectResult,
+    "runtime-smoke-result.schema.json": RuntimeSmokeResult,
     "validation-result.schema.json": ValidationResult,
 }
 

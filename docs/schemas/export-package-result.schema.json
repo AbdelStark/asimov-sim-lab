@@ -1,56 +1,50 @@
 {
-  "$defs": {
-    "EvidenceArtifact": {
-      "additionalProperties": false,
-      "properties": {
-        "artifact_type": {
-          "title": "Artifact Type",
-          "type": "string"
-        },
-        "relative_path": {
-          "title": "Relative Path",
-          "type": "string"
-        },
-        "sha256": {
-          "title": "Sha256",
-          "type": "string"
-        },
-        "size_bytes": {
-          "title": "Size Bytes",
-          "type": "integer"
-        }
-      },
-      "required": [
-        "artifact_type",
-        "relative_path",
-        "sha256",
-        "size_bytes"
-      ],
-      "title": "EvidenceArtifact",
-      "type": "object"
-    }
-  },
   "additionalProperties": false,
   "properties": {
-    "artifacts": {
-      "items": {
-        "$ref": "#/$defs/EvidenceArtifact"
-      },
-      "title": "Artifacts",
-      "type": "array"
-    },
-    "bundle_dir": {
-      "title": "Bundle Dir",
+    "archive_path": {
+      "title": "Archive Path",
       "type": "string"
     },
+    "archive_sha256": {
+      "title": "Archive Sha256",
+      "type": "string"
+    },
+    "archive_size_bytes": {
+      "title": "Archive Size Bytes",
+      "type": "integer"
+    },
     "command": {
-      "const": "evidence",
-      "default": "evidence",
+      "const": "export",
+      "default": "export",
       "title": "Command",
+      "type": "string"
+    },
+    "deterministic": {
+      "title": "Deterministic",
+      "type": "boolean"
+    },
+    "evidence_bundle_path": {
+      "title": "Evidence Bundle Path",
+      "type": "string"
+    },
+    "evidence_bundle_sha256": {
+      "title": "Evidence Bundle Sha256",
       "type": "string"
     },
     "generated_at_utc": {
       "title": "Generated At Utc",
+      "type": "string"
+    },
+    "package_dir": {
+      "title": "Package Dir",
+      "type": "string"
+    },
+    "package_manifest_path": {
+      "title": "Package Manifest Path",
+      "type": "string"
+    },
+    "package_manifest_sha256": {
+      "title": "Package Manifest Sha256",
       "type": "string"
     },
     "runtime_smoke_skipped": {
@@ -115,13 +109,20 @@
   },
   "required": [
     "status",
-    "bundle_dir",
-    "artifacts",
+    "package_dir",
+    "archive_path",
+    "archive_sha256",
+    "archive_size_bytes",
+    "evidence_bundle_path",
+    "evidence_bundle_sha256",
+    "package_manifest_path",
+    "package_manifest_sha256",
+    "deterministic",
     "validation_passed",
     "validation_issue_count",
     "runtime_smoke_status",
     "runtime_smoke_skipped"
   ],
-  "title": "EvidenceBundleResult",
+  "title": "ExportPackageResult",
   "type": "object"
 }

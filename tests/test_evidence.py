@@ -6,10 +6,14 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
+from asimov_sim_lab import runtime
 from asimov_sim_lab.cli import app
 
 
-def test_evidence_bundle_writes_complete_artifacts(minimal_source: Path, tmp_path: Path) -> None:
+def test_evidence_bundle_writes_complete_artifacts(
+    minimal_source: Path, tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(runtime, "_import_mujoco", lambda: None)
     output_dir = tmp_path / "evidence"
 
     result = CliRunner().invoke(
@@ -30,11 +34,14 @@ def test_evidence_bundle_writes_complete_artifacts(minimal_source: Path, tmp_pat
     assert payload["command"] == "evidence"
     assert payload["validation_passed"] is True
     assert payload["validation_issue_count"] >= 0
+    assert payload["runtime_smoke_status"] == "warning"
+    assert payload["runtime_smoke_skipped"] is True
 
     expected_files = {
         "asset-manifest.json",
         "inspect-result.json",
         "validation-result.json",
+        "runtime-smoke-result.json",
         "inspect-report.md",
         "evidence-bundle.json",
     }
@@ -52,16 +59,22 @@ def test_evidence_bundle_writes_complete_artifacts(minimal_source: Path, tmp_pat
     validation_result = json.loads(
         (output_dir / "validation-result.json").read_text(encoding="utf-8")
     )
+    runtime_result = json.loads(
+        (output_dir / "runtime-smoke-result.json").read_text(encoding="utf-8")
+    )
     assert inspect_result["source_manifest_path"] == "asset-manifest.json"
     assert validation_result["source_manifest_path"] == "asset-manifest.json"
+    assert runtime_result["source_manifest_path"] == "asset-manifest.json"
+    assert runtime_result["skipped"] is True
     assert "# AsimovFixture Model Contract" in (output_dir / "inspect-report.md").read_text(
         encoding="utf-8"
     )
 
 
 def test_evidence_bundle_refuses_non_empty_output_without_overwrite(
-    minimal_source: Path, tmp_path: Path
+    minimal_source: Path, tmp_path: Path, monkeypatch
 ) -> None:
+    monkeypatch.setattr(runtime, "_import_mujoco", lambda: None)
     output_dir = tmp_path / "evidence"
     output_dir.mkdir()
     (output_dir / "leftover.txt").write_text("stale", encoding="utf-8")
@@ -85,8 +98,9 @@ def test_evidence_bundle_refuses_non_empty_output_without_overwrite(
 
 
 def test_evidence_bundle_overwrite_replaces_known_artifacts(
-    minimal_source: Path, tmp_path: Path
+    minimal_source: Path, tmp_path: Path, monkeypatch
 ) -> None:
+    monkeypatch.setattr(runtime, "_import_mujoco", lambda: None)
     output_dir = tmp_path / "evidence"
 
     first = CliRunner().invoke(

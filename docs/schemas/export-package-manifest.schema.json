@@ -1,0 +1,109 @@
+{
+  "$defs": {
+    "EvidenceArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_type": {
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "relative_path": {
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_type",
+        "relative_path",
+        "sha256",
+        "size_bytes"
+      ],
+      "title": "EvidenceArtifact",
+      "type": "object"
+    },
+    "ExportPackageFile": {
+      "additionalProperties": false,
+      "properties": {
+        "relative_path": {
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "relative_path",
+        "sha256",
+        "size_bytes"
+      ],
+      "title": "ExportPackageFile",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "deterministic": {
+      "title": "Deterministic",
+      "type": "boolean"
+    },
+    "evidence_artifacts": {
+      "items": {
+        "$ref": "#/$defs/EvidenceArtifact"
+      },
+      "title": "Evidence Artifacts",
+      "type": "array"
+    },
+    "evidence_bundle_path": {
+      "title": "Evidence Bundle Path",
+      "type": "string"
+    },
+    "evidence_bundle_sha256": {
+      "title": "Evidence Bundle Sha256",
+      "type": "string"
+    },
+    "generated_at_utc": {
+      "title": "Generated At Utc",
+      "type": "string"
+    },
+    "generator_version": {
+      "default": "0.1.0",
+      "title": "Generator Version",
+      "type": "string"
+    },
+    "package_files": {
+      "items": {
+        "$ref": "#/$defs/ExportPackageFile"
+      },
+      "title": "Package Files",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "evidence_bundle_path",
+    "evidence_bundle_sha256",
+    "evidence_artifacts",
+    "package_files",
+    "deterministic"
+  ],
+  "title": "ExportPackageManifest",
+  "type": "object"
+}

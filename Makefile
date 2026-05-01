@@ -29,4 +29,6 @@ smoke-real:
 	uv run asimov-sim-lab doctor --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --format json
 	uv run asimov-sim-lab inspect --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --json
 	uv run asimov-sim-lab validate --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --format json
+	uv run asimov-sim-lab runtime-smoke --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --allow-missing-mujoco --format json
 	uv run asimov-sim-lab evidence --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --output-dir .asimov-sim-lab/smoke-real-evidence --overwrite --format json
+	uv run asimov-sim-lab export --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --output-dir .asimov-sim-lab/smoke-real-export --overwrite --format json

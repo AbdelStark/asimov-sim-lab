@@ -20,7 +20,11 @@ cli.py
   |
   +-- presets.py ------ built-in neutral preset and optional local TOML presets
   |
+  +-- runtime.py ------ optional MuJoCo compiled-runtime smoke
+  |
   +-- evidence.py ----- checksummed evidence bundle directory
+  |
+  +-- export.py ------- deterministic evidence export archive
   |
   v
 models.py ------------ Pydantic public contracts and JSON Schemas
@@ -33,8 +37,10 @@ models.py ------------ Pydantic public contracts and JSON Schemas
 3. `manifest.py` hashes the primary XML and STL files and records mesh reference provenance.
 4. `inspect.py` parses `sim-model/xmls/asimov.xml` into an `InspectResult`.
 5. `validation.py` derives validation issues from the current XML and inspect contract.
-6. `evidence.py` can write the manifest, inspect result, validation result, Markdown report, and bundle index into one checksummed evidence directory.
-7. The CLI emits text, Markdown, or JSON and optionally writes artifacts atomically.
+6. `runtime.py` can compile the canonical MJCF through the optional MuJoCo package and returns a typed `RuntimeSmokeResult`; when MuJoCo is absent, the default behavior is an explicit skipped warning.
+7. `evidence.py` can write the manifest, inspect result, validation result, runtime-smoke result, Markdown report, and bundle index into one checksummed evidence directory.
+8. `export.py` can generate a portable evidence directory plus a deterministic `tar.gz` archive and package manifest.
+9. The CLI emits text, Markdown, or JSON and optionally writes artifacts atomically.
 
 ## Public Contracts
 
@@ -46,7 +52,10 @@ Current contract families:
 - `DoctorResult`
 - `InspectResult`
 - `ValidationResult`
+- `RuntimeSmokeResult`
 - `EvidenceBundleResult`
+- `ExportPackageManifest`
+- `ExportPackageResult`
 - `ErrorResult`
 
 Generated schemas must be updated with:
@@ -63,8 +72,10 @@ uv run python scripts/generate_schemas.py --check
 - `compiler@meshdir` must resolve to `sim-model/assets/meshes`; other layouts fail with `UNSUPPORTED_SOURCE_LAYOUT`.
 - The inspect contract exports concrete MJCF elements only. Defaults/templates are not counted as robot bodies or joints.
 - Validation errors are typed `ValidationIssue` objects, not free-form log strings.
+- Runtime smoke is intentionally limited to optional MuJoCo import and MJCF compilation. It is not a simulation, controller, safety, or policy-performance claim.
 - Markdown reports are derived from `InspectResult`; they are not independent truth.
 - Evidence bundles list artifact checksums in `evidence-bundle.json`; the bundle index is the review handle, not a replacement for the JSON contracts it references.
+- Export packages normalize generated timestamps, evidence bundle paths, tar metadata, owner IDs, and gzip metadata by default so identical inputs produce identical archive bytes.
 
 ## Invariants
 
@@ -72,6 +83,8 @@ uv run python scripts/generate_schemas.py --check
 - Every machine-readable result has `schema_version`, `generated_at_utc`, `tool_version`, `command`, `status`, and `warnings`.
 - Output files are written through a temporary file and atomic replace.
 - Evidence bundle directories must be empty unless `--overwrite` is used.
+- Export package directories must be empty unless `--overwrite` is used.
+- Deterministic export archives must not include absolute package output paths.
 - Invalid XML cannot produce a partial inspect contract.
 - Malformed numeric or boolean MJCF attributes fail contract extraction rather than becoming `null`.
 - Sensor object references are validated against the correct MJCF namespace: bodies, joints, sites, cameras, and concrete geoms.
@@ -89,8 +102,15 @@ uv run python scripts/generate_schemas.py --check
 - `XML_BOOLEAN_PARSE_FAILED`: a boolean MJCF attribute is not one of `true`, `false`, `1`, or `0`.
 - `OUTPUT_PATH_IS_DIRECTORY`: `--output` or `--manifest-output` points at a directory.
 - `OUTPUT_WRITE_FAILED`: the command could not create, write, or atomically replace an output file.
+- `MUJOCO_NOT_INSTALLED`: optional MuJoCo runtime is unavailable for a runtime smoke check.
+- `MUJOCO_MODEL_LOAD_FAILED`: MuJoCo was available but could not compile the canonical MJCF.
 - `EVIDENCE_OUTPUT_NOT_DIRECTORY`: `--output-dir` points at a non-directory path.
 - `EVIDENCE_OUTPUT_NOT_EMPTY`: `--output-dir` is non-empty and `--overwrite` was not passed.
+- `EXPORT_OUTPUT_NOT_DIRECTORY`: export `--output-dir` points at a non-directory path.
+- `EXPORT_OUTPUT_NOT_EMPTY`: export `--output-dir` is non-empty and `--overwrite` was not passed.
+- `EXPORT_PACKAGE_NAME_INVALID`: export package name contains path separators or unsafe characters.
+- `EXPORT_ARCHIVE_WRITE_FAILED`: export archive could not be written atomically.
+- `EXPORT_ARCHIVE_INPUT_FAILED`: a generated package file could not be read while creating the archive.
 
 ## Operational Runbook
 
@@ -109,7 +129,9 @@ uv run asimov-sim-lab doctor --asset-root /absolute/path/to/asimov-v1 --format j
 uv run asimov-sim-lab doctor --asset-root /absolute/path/to/asimov-v1 --format json
 uv run asimov-sim-lab inspect --asset-root /absolute/path/to/asimov-v1 --json
 uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --format json
+uv run asimov-sim-lab runtime-smoke --asset-root /absolute/path/to/asimov-v1 --allow-missing-mujoco --format json
 uv run asimov-sim-lab evidence --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --overwrite --format json
+uv run asimov-sim-lab export --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/export --overwrite --format json
 ```
 
 Read `issues[].code`, `issues[].message`, and `issues[].remediation` before inspecting code. Most failures should be actionable from JSON alone.
@@ -131,6 +153,8 @@ make check
 
 `make check` runs lockfile, format, lint, mypy, pytest with coverage, schema drift, build, and dependency audit gates.
 
+CI also generates fixture-backed evidence and export artifacts after tests pass, then uploads `.asimov-sim-lab/ci-evidence/` and `.asimov-sim-lab/ci-export/` as retained workflow artifacts.
+
 ### Optional Real-Upstream Smoke
 
 ```bash
@@ -139,14 +163,15 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 
 The real-upstream smoke is intentionally optional because CI cannot assume access to a private or sibling checkout.
 
-The smoke target also writes `.asimov-sim-lab/smoke-real-evidence/`, which is ignored local state and can be reviewed before sharing.
+The smoke target also writes `.asimov-sim-lab/smoke-real-evidence/` and `.asimov-sim-lab/smoke-real-export/`, which are ignored local state and can be reviewed before sharing.
 
 ## Security And Privacy
 
 - No secrets are required.
 - `.env` and `.asimov-sim-lab/` are ignored local state.
-- JSON artifacts and evidence bundle indexes may include absolute local paths in provenance fields. Treat generated artifacts as local diagnostics unless paths have been reviewed for publication.
-- The tool does not execute XML content, shell out to MuJoCo, or open network connections.
+- JSON artifacts and evidence bundle indexes may include absolute local source paths in provenance fields. Treat generated artifacts as local diagnostics unless paths have been reviewed for publication.
+- Export package archives normalize generated bundle output paths, but source provenance can still include absolute local asset roots.
+- The tool does not open network connections. `runtime-smoke` imports MuJoCo only when installed and asks MuJoCo to compile the local XML; it does not open a viewer or execute control code.
 
 ## Current Boundaries
 
@@ -156,4 +181,4 @@ Deferred until separate contracts exist:
 - screenshot, video, or capture artifacts
 - local web UI or report viewer
 - controller or policy-training workflows
-- compiled-physics validation beyond XML contract extraction
+- simulation stepping, controller evaluation, or physics quality validation beyond MJCF compilation

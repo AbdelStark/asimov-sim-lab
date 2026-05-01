@@ -11,8 +11,10 @@ The MVP needs four result families:
 1. asset discovery / doctor
 2. inspection / model contract export
 3. validation
-4. evidence bundle summaries
-5. structured domain errors for JSON-mode failures
+4. optional runtime smoke
+5. evidence bundle summaries
+6. deterministic export package summaries
+7. structured domain errors for JSON-mode failures
 
 ## Shared envelope
 Every machine-readable result must include this top-level envelope:
@@ -135,6 +137,69 @@ class EvidenceBundleResult(ResultEnvelope):
     artifacts: list[EvidenceArtifact]
     validation_passed: bool
     validation_issue_count: int
+    runtime_smoke_status: Literal['ok', 'warning', 'error']
+    runtime_smoke_skipped: bool
+```
+
+## Runtime smoke result contract
+```python
+class RuntimeModelCounts(BaseModel):
+    nbody: int
+    njnt: int
+    nu: int
+    nsensor: int
+    ngeom: int
+    nmesh: int
+    nq: int
+    nv: int
+
+class RuntimeSmokeResult(ResultEnvelope):
+    command: Literal['runtime-smoke'] = 'runtime-smoke'
+    runtime: Literal['mujoco'] = 'mujoco'
+    runtime_available: bool
+    runtime_version: str | None = None
+    skipped: bool
+    loaded: bool
+    xml_path: str
+    model_counts: RuntimeModelCounts | None = None
+    elapsed_ms: float | None = None
+    failure_code: str | None = None
+    failure_message: str | None = None
+    failure_remediation: str | None = None
+```
+
+## Export package result contract
+```python
+class ExportPackageFile(BaseModel):
+    relative_path: str
+    sha256: str
+    size_bytes: int
+
+class ExportPackageManifest(BaseModel):
+    schema_version: str = '0.1.0'
+    generated_at_utc: str
+    generator_version: str
+    evidence_bundle_path: str
+    evidence_bundle_sha256: str
+    evidence_artifacts: list[EvidenceArtifact]
+    package_files: list[ExportPackageFile]
+    deterministic: bool
+
+class ExportPackageResult(ResultEnvelope):
+    command: Literal['export'] = 'export'
+    package_dir: str
+    archive_path: str
+    archive_sha256: str
+    archive_size_bytes: int
+    evidence_bundle_path: str
+    evidence_bundle_sha256: str
+    package_manifest_path: str
+    package_manifest_sha256: str
+    deterministic: bool
+    validation_passed: bool
+    validation_issue_count: int
+    runtime_smoke_status: Literal['ok', 'warning', 'error']
+    runtime_smoke_skipped: bool
 ```
 
 ## Doctor result contract
@@ -177,10 +242,12 @@ Every result must preserve enough provenance to answer:
 - `ok` + no errors -> exit code `0`
 - warnings only -> exit code `0`
 - validation or contract errors -> non-zero exit code
-- evidence bundle exits non-zero when bundled validation did not pass
+- runtime smoke exits non-zero only when MuJoCo is required and missing, or when MuJoCo fails to compile the XML
+- evidence and export exit non-zero when bundled validation did not pass or runtime smoke returned `error`
 
 ## Non-goals
 - multi-version backward compatibility at v0 beyond explicit schema checks
 - browser UI wire format design
 - video capture metadata contract in this phase
 - partial inspect contracts for malformed XML
+- simulation quality, controller quality, or hardware fidelity from runtime smoke
