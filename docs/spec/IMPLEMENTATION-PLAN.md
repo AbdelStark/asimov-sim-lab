@@ -16,6 +16,8 @@ Contract-first. The MVP core is now implemented, so future work should harden co
 8. Optional MuJoCo runtime-smoke command with explicit skipped/missing dependency semantics.
 9. Deterministic export package generation with portable bundle paths and archive checksums.
 10. CI fixture evidence/export generation with retained workflow artifacts.
+11. Enforced diagnostic-code registry and release-candidate evidence verifier.
+12. Viewer/open RFC defining the required preflight contract before implementation.
 
 ## Current module ownership
 
@@ -45,13 +47,14 @@ Contract-first. The MVP core is now implemented, so future work should harden co
 - evidence bundles must list checksums for every generated review artifact
 - deterministic export archives must not embed local output-directory paths
 - runtime smoke must stay dependency-gated and must not become a viewer, simulation, or controller claim
+- emitted diagnostic codes must be registered and mechanically checked
+- release-candidate export packages must pass `scripts/check_release_evidence.py`
 
 ## Next implementation sequence
 
-1. Complete alpha contract hardening: public field docs, error-code registry, and stricter schema-version checks.
-2. Add a publication-safe evidence review guide and error-code registry.
-3. Add a release-candidate evidence policy that says which bundle/export artifacts must be attached before tagging.
-4. Design the viewer/open contract as an RFC before adding interactive MuJoCo surfaces.
+1. Implement the `RFC-0008` viewer/open preflight contract without adding capture, controller, or policy surfaces.
+2. Add a release-candidate dry-run report that records the verified real-upstream archive SHA-256 and known warnings.
+3. Improve error-code ergonomics by linking JSON-mode failures to registry documentation.
 
 ## Implementation decisions
 

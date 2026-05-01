@@ -113,6 +113,12 @@ uv run asimov-sim-lab export \
 
 The export directory contains a portable evidence bundle, `export-package-manifest.json`, `export-package-result.json`, and `asimov-sim-lab-evidence.tar.gz`. The archive normalizes timestamps and tar metadata by default, so identical inputs produce identical archive hashes.
 
+Verify an export package before attaching it to a release candidate:
+
+```bash
+uv run python scripts/check_release_evidence.py --export-dir .asimov-sim-lab/export
+```
+
 Exit codes:
 
 - `0`: command succeeded, including warnings-only validation
@@ -162,6 +168,7 @@ uv run ruff check .
 uv run mypy
 uv run pytest
 uv run python scripts/generate_schemas.py --check
+uv run python scripts/check_error_registry.py --check
 uv build
 uv run pip-audit --skip-editable
 ```
@@ -180,15 +187,15 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 
 ## Contribute
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/spec/PRODUCT-SPEC.md](docs/spec/PRODUCT-SPEC.md), and [AGENTS.md](AGENTS.md). Keep changes contract-first: update code, tests, generated schemas, and docs together. Do not add viewer, capture, controller, policy, or UI surfaces without a contract and tests.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/spec/PRODUCT-SPEC.md](docs/spec/PRODUCT-SPEC.md), and [AGENTS.md](AGENTS.md). Keep changes contract-first: update code, tests, generated schemas, and docs together. Diagnostic-code changes must update [docs/spec/ERROR-CODE-REGISTRY.md](docs/spec/ERROR-CODE-REGISTRY.md). Release candidates must follow [docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md](docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md). Do not add viewer, capture, controller, policy, or UI surfaces without a contract and tests.
 
 ## Roadmap
 
 Next three milestones:
 
-- **M1: Error-code registry and release checklist.** Exit criteria: every emitted issue/failure code is documented with severity, remediation, and owning module.
-- **M2: Viewer contract preview.** Exit criteria: MuJoCo viewer support lives behind the `viewer` extra, loads only validated local assets, and has a typed failure model before any screenshot/capture command ships.
-- **M3: Release evidence policy.** Exit criteria: CI artifact retention, deterministic export packages, and real-upstream smoke output are tied into a documented release candidate process.
+- **M1: Viewer/open implementation preflight.** Exit criteria: `RFC-0008` is implemented as schema-backed preflight, still behind the `viewer` extra, with no capture/controller claims.
+- **M2: Release-candidate dry run.** Exit criteria: one real-upstream export package is verified, warnings are documented, and release notes include the archive SHA-256.
+- **M3: Error-code ergonomics.** Exit criteria: CLI JSON errors link to registry docs, and docs explain which warning codes `--strict` promotes.
 
 ## Help
 

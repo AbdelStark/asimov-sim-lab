@@ -13,6 +13,10 @@ The first operator surface should be a direct, scriptable CLI rather than a GUI-
 - `doctor`
 - `inspect`
 - `validate`
+- `runtime-smoke`
 - `evidence`
+- `export`
 
 Deferred commands such as `open`, `capture`, or preset management require their own contracts, tests, and schemas before they appear in the CLI.
+
+`open` now has a draft contract in `RFC-0008-viewer-open-contract.md`; it remains deferred until its schema, failure codes, tests, and optional-runtime behavior are implemented.

@@ -17,6 +17,9 @@ All notable user-facing changes are recorded here.
 - `evidence` command that writes a checksummed review bundle with manifest, inspect JSON, validation JSON, runtime-smoke JSON, Markdown report, and bundle index.
 - `export` command that writes a deterministic evidence archive, package manifest, and package result with archive checksums.
 - CI fixture evidence/export artifact retention for release-review workflows.
+- Enforced diagnostic-code registry covering emitted errors and warnings.
+- Release-candidate evidence policy and export-package verifier.
+- Viewer/open RFC that defines the required preflight contract before implementation.
 - Synthetic fixture test suite, coverage gate, schema drift check, build gate, and dependency audit gate.
 
 ### Fixed

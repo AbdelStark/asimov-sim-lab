@@ -65,6 +65,12 @@ uv run python scripts/generate_schemas.py
 uv run python scripts/generate_schemas.py --check
 ```
 
+Public diagnostic codes are documented in `docs/spec/ERROR-CODE-REGISTRY.md` and enforced with:
+
+```bash
+uv run python scripts/check_error_registry.py --check
+```
+
 ## Design Decisions
 
 - Source assets are local-checkout-only for the MVP. The tool never downloads or vendors upstream files.
@@ -151,9 +157,17 @@ Commit schema changes only when the public contract intentionally changed.
 make check
 ```
 
-`make check` runs lockfile, format, lint, mypy, pytest with coverage, schema drift, build, and dependency audit gates.
+`make check` runs format, lint, mypy, schema drift, error-registry coverage, pytest with coverage, build, and dependency audit gates.
 
 CI also generates fixture-backed evidence and export artifacts after tests pass, then uploads `.asimov-sim-lab/ci-evidence/` and `.asimov-sim-lab/ci-export/` as retained workflow artifacts.
+
+Release-candidate export packages must also pass:
+
+```bash
+uv run python scripts/check_release_evidence.py --export-dir .asimov-sim-lab/smoke-real-export
+```
+
+The release-candidate policy is `docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md`.
 
 ### Optional Real-Upstream Smoke
 

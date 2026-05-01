@@ -24,6 +24,9 @@
 - JSON-mode structured errors for recoverable domain failures
 - generated JSON Schemas in `docs/schemas/`
 - `make check` gate covering lockfile, format, lint, mypy, pytest, schema drift, build, and dependency audit
+- enforced diagnostic-code registry in `docs/spec/ERROR-CODE-REGISTRY.md`
+- release-candidate evidence policy and export-package verifier
+- viewer/open RFC that defines the preflight gate before implementation
 - optional `make smoke-real` now exercises runtime smoke, evidence bundle generation, and export packaging against a local upstream checkout
 - `AGENTS.md`, `CHANGELOG.md`, `LICENSE`, `.env.example`, and architecture/runbook documentation
 
@@ -50,5 +53,5 @@ Alpha contract hardening:
 
 - document all public contract fields and warning/error codes
 - add a publication-safe evidence redaction/review guide
-- keep optional real-upstream smoke evidence and export packages as reviewable artifacts
-- define the viewer contract before adding any MuJoCo runtime surface
+- implement `RFC-0008` as a preflight-only viewer/open slice before any interactive viewer command
+- run a full release-candidate dry run and record archive SHA-256 plus known warnings

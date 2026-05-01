@@ -65,6 +65,7 @@ uv run ruff check .
 uv run mypy
 uv run pytest
 uv run python scripts/generate_schemas.py --check
+uv run python scripts/check_error_registry.py --check
 uv build
 uv run pip-audit --skip-editable
 ```
@@ -78,6 +79,7 @@ uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --format
 uv run asimov-sim-lab runtime-smoke --asset-root /absolute/path/to/asimov-v1 --allow-missing-mujoco --format json
 uv run asimov-sim-lab evidence --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --overwrite --format json
 uv run asimov-sim-lab export --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/export --overwrite --format json
+uv run python scripts/check_release_evidence.py --export-dir .asimov-sim-lab/export
 ```
 
 Optional real-upstream smoke:
@@ -91,6 +93,8 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 - Keep JSON contracts as source of truth. Text and Markdown are renderings.
 - Add or update tests for every behavior change.
 - Regenerate and commit `docs/schemas/*.schema.json` after public contract changes.
+- Update `docs/spec/ERROR-CODE-REGISTRY.md` when adding, removing, or renaming diagnostic codes.
+- Follow `docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md` before tagging or publishing an alpha candidate.
 - Use typed `LabError` or `ValidationIssue` codes for recoverable failures.
 - Make validation issues actionable with a clear message and remediation when possible.
 - Keep local paths and generated evidence out of public docs unless intentionally documented.
@@ -105,6 +109,7 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 - Do not add hidden sibling checkout discovery.
 - Do not make hardware fidelity, manufacturing, safety, control, or policy-performance claims.
 - Do not add viewer, capture, controller, or policy-training surfaces without a spec, tests, and schema-backed contract.
+- Treat `docs/rfcs/RFC-0008-viewer-open-contract.md` as the gate for any future `open` command work.
 - Do not relax schema drift, mypy, coverage, or lint gates to make a change pass.
 - Do not commit `.env` or `.asimov-sim-lab/`.
 

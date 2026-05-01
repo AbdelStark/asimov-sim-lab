@@ -11,6 +11,7 @@ These RFCs define the durable architecture and product-contract boundaries for t
 - `RFC-0005-validation-and-error-taxonomy.md`
 - `RFC-0006-evidence-and-export-contract.md`
 - `RFC-0007-ci-release-and-quality-gates.md`
+- `RFC-0008-viewer-open-contract.md`
 
 ## Phase-2 lock files
 The RFCs are now complemented by phase-2 implementation contracts in `docs/spec/`:
@@ -18,6 +19,8 @@ The RFCs are now complemented by phase-2 implementation contracts in `docs/spec/
 - `RESULT-SCHEMA-CONTRACT.md`
 - `CLI-COMMAND-SPEC.md`
 - `PROFILE-CONTRACT.md`
+- `ERROR-CODE-REGISTRY.md`
+- `RELEASE-CANDIDATE-EVIDENCE-POLICY.md`
 - `FIRST-THREE-SCENARIOS-BUILD-PACK.md`
 
 Read those before changing implementation behavior. The MVP core has shipped; the goal now is to keep RFC language, executable contracts, schemas, and README status aligned.

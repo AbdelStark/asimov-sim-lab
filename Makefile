@@ -1,6 +1,6 @@
-.PHONY: build check lint schemas schemas-update security smoke-real test type
+.PHONY: build check lint registry release-evidence-check schemas schemas-update security smoke-real test type
 
-check: lint type schemas test build security
+check: lint type schemas registry test build security
 
 lint:
 	uv run ruff format --check .
@@ -18,6 +18,13 @@ schemas:
 schemas-update:
 	uv run python scripts/generate_schemas.py
 
+registry:
+	uv run python scripts/check_error_registry.py --check
+
+release-evidence-check:
+	@test -n "$(ASIMOV_SIM_LAB_EXPORT_DIR)" || (echo "Set ASIMOV_SIM_LAB_EXPORT_DIR=/path/to/export-dir" && exit 2)
+	uv run python scripts/check_release_evidence.py --export-dir "$(ASIMOV_SIM_LAB_EXPORT_DIR)"
+
 build:
 	uv build
 
@@ -32,3 +39,4 @@ smoke-real:
 	uv run asimov-sim-lab runtime-smoke --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --allow-missing-mujoco --format json
 	uv run asimov-sim-lab evidence --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --output-dir .asimov-sim-lab/smoke-real-evidence --overwrite --format json
 	uv run asimov-sim-lab export --asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)" --output-dir .asimov-sim-lab/smoke-real-export --overwrite --format json
+	uv run python scripts/check_release_evidence.py --export-dir .asimov-sim-lab/smoke-real-export

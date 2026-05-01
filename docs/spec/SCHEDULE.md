@@ -37,10 +37,13 @@ Status: complete for alpha MVP.
 - optional MuJoCo runtime-smoke command
 - deterministic export package command
 - CI fixture evidence/export artifact retention
+- enforced diagnostic-code registry
+- release-candidate evidence verifier
+- viewer/open RFC preflight contract
 
 ## Phase 4 — Alpha hardening
 
-Status: next.
+Status: in progress.
 
 - public field and error-code documentation
 - publication-safe evidence review guidance

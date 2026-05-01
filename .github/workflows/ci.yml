@@ -32,6 +32,7 @@ jobs:
       - run: uv run mypy
       - run: uv run python scripts/generate_schemas.py
       - run: git diff --exit-code -- docs/schemas
+      - run: uv run python scripts/check_error_registry.py --check
       - run: uv run pytest
       - name: Build fixture evidence artifacts
         run: |
@@ -45,6 +46,8 @@ jobs:
             --output-dir .asimov-sim-lab/ci-export \
             --overwrite \
             --format json
+          uv run python scripts/check_release_evidence.py \
+            --export-dir .asimov-sim-lab/ci-export
       - uses: actions/upload-artifact@v4
         with:
           name: evidence-python-${{ matrix.python-version }}

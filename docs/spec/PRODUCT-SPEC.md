@@ -200,14 +200,17 @@ asimov-sim-lab/
 - `uv run mypy`
 - `uv run pytest`
 - `uv run python scripts/generate_schemas.py --check`
+- `uv run python scripts/check_error_registry.py --check`
 - `uv build`
 - `uv run pip-audit --skip-editable`
 
-CI uses synthetic fixtures only, generates retained fixture evidence/export artifacts, and does not require MuJoCo. Real upstream smoke is optional and gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
+CI uses synthetic fixtures only, generates retained fixture evidence/export artifacts, verifies export-package integrity, and does not require MuJoCo. Real upstream smoke is optional and gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
+
+Release candidates follow `docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md` and must pass `scripts/check_release_evidence.py` for the candidate export directory.
 
 ## Deferred V1 Surface
 
-- local MuJoCo `open` command
+- local MuJoCo `open` command, gated by `docs/rfcs/RFC-0008-viewer-open-contract.md`
 - capture/screenshot/video contracts
 - report viewer or UI
 - simulation stepping or richer physical summaries from compiled MuJoCo state

@@ -169,6 +169,8 @@ These are intentionally named now but not promised in this phase:
 
 The CLI should omit deferred commands until they have real behavior, tests, and contracts.
 
+`open` is gated by `docs/rfcs/RFC-0008-viewer-open-contract.md`. It must ship as schema-backed preflight before any interactive viewer launch is allowed.
+
 ## Exit codes
 - `0`: success, including warnings-only validation
 - `1`: validation failed or XML contract extraction failed
