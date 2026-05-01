@@ -1,0 +1,7 @@
+schema_version = "0.1.0"
+name = "custom-neutral"
+description = "Small runnable preset example for the synthetic test fixture."
+
+[joints]
+left_hip_pitch_joint = 0.25
+right_elbow_joint = -0.5

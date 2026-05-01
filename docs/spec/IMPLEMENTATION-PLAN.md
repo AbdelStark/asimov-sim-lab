@@ -19,9 +19,10 @@ Phase 3 should now execute against those contracts rather than redesigning them 
 1. Implement asset-root resolution and manifest generation.
 2. Implement MJCF inspection export.
 3. Implement validation engine and preset checks.
-4. Add one truthful local open/capture smoke path only after the three core packages pass.
-5. Add evidence artifacts and CI.
-6. Only then add richer UI/viewer/product polish.
+4. Generate and commit JSON Schemas from the Pydantic contracts.
+5. Add CI, Makefile, pre-commit, coverage, schema drift, build, and lightweight security gates.
+6. Add optional real-upstream smoke gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
+7. Only then consider viewer/open/capture or richer UI/product polish.
 
 ## Must-have repo invariants
 - all generated outputs carry source provenance
@@ -38,7 +39,14 @@ Phase 3 should now execute against those contracts rather than redesigning them 
 - `src/asimov_sim_lab/inspect.py`
 - `src/asimov_sim_lab/validation.py`
 - `src/asimov_sim_lab/presets.py`
+- `src/asimov_sim_lab/doctor.py`
+- `scripts/generate_schemas.py`
 - `tests/test_doctor.py`
 - `tests/test_inspect.py`
 - `tests/test_validation.py`
+- `tests/test_schemas.py`
 - feature-specific fixtures under `tests/fixtures/`
+
+## Implementation decisions
+
+The detailed decision log lives in `docs/spec/MVP-DECISION-LOG.md`. That file is part of the implementation contract, not background reading.

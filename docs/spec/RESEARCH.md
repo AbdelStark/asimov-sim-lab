@@ -15,8 +15,12 @@ Build the narrowest truthful core first. Secondary UX layers must consume stable
 ## Open research questions
 - exact upstream version pinning strategy
 - redistribution boundaries for mirrored/generated assets
-- whether the first implementation should vendor a frozen fixture snapshot or pull upstream on demand
 - how much browser/UI surface belongs in v1 versus a later phase
+
+## Locked MVP research decisions
+- MVP source assets are local-checkout-only.
+- CI uses synthetic fixtures only.
+- Upstream assets are not vendored or downloaded by core commands.
 
 ## Quality bar
 World-class software here means:

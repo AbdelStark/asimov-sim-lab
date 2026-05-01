@@ -4,7 +4,7 @@ A spec-first MuJoCo inspection and validation workbench for the Asimov v1 simula
 
 ## Status
 
-Private incubation repo. Phase 2 contract hardening is now locked. The next pass should implement the first narrow real value loop rather than inventing more surface area.
+Private incubation repo. The MVP core is CLI-first and contract-first: local asset discovery, manifest generation, MJCF inspection, validation, generated JSON Schemas, and synthetic fixture tests.
 
 ## Thesis
 
@@ -17,47 +17,59 @@ The upstream Asimov release already contains technically valuable source materia
 ## Current build posture
 
 - modern `uv`-managed Python project
-- spec-first / RFC-first execution
-- clean package scaffold for future implementation
-- phase 2 contracts locked for manifest, result schemas, CLI semantics, profiles, and first work packs
+- spec-first / RFC-first execution with executable contracts
+- local-checkout-only source asset strategy
+- generated JSON Schemas for public result artifacts
 - emphasis on reproducibility, provenance, and validation
 - no inflated claims about hardware fidelity, manufacturing completeness, or electrical safety
+- no controller, policy-training, UI, viewer, screenshot, or capture implementation in the MVP
 
-## Planned architecture
+## MVP architecture
 
 - Python core package in `src/asimov_sim_lab`
 - contracts and RFCs in `docs/spec/` and `docs/rfcs/`
+- generated JSON Schemas in `docs/schemas/`
 - tests in `tests/`
 - optional secondary UI surfaces only after the core data contracts are stable
 
-## Source of truth before implementation
+## Source of truth
 
 Read these first:
 
 1. `docs/spec/PRODUCT-SPEC.md`
 2. `docs/spec/IMPLEMENTATION-PLAN.md`
 3. `docs/spec/MVP-STATUS.md`
-4. `docs/spec/MANIFEST-CONTRACT.md`
-5. `docs/spec/RESULT-SCHEMA-CONTRACT.md`
-6. `docs/spec/CLI-COMMAND-SPEC.md`
-7. `docs/spec/PROFILE-CONTRACT.md`
-8. `docs/spec/FIRST-THREE-SCENARIOS-BUILD-PACK.md`
-9. `docs/rfcs/README.md`
+4. `docs/spec/MVP-DECISION-LOG.md`
+5. `docs/spec/MANIFEST-CONTRACT.md`
+6. `docs/spec/RESULT-SCHEMA-CONTRACT.md`
+7. `docs/spec/CLI-COMMAND-SPEC.md`
+8. `docs/spec/PROFILE-CONTRACT.md`
+9. `docs/spec/FIRST-THREE-SCENARIOS-BUILD-PACK.md`
+10. `docs/rfcs/README.md`
 
 ## Initial commands
 
 ```bash
 uv sync --extra dev
-uv run pytest
+uv run asimov-sim-lab doctor --asset-root /path/to/asimov-v1 --format json
+uv run asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --json
+uv run asimov-sim-lab validate --asset-root /path/to/asimov-v1 --format json
 uv run ruff check .
 uv run mypy
-uv run asimov-sim-lab doctor
+uv run pytest
 ```
 
-## Immediate next milestone
+## Local profile
 
-Implement work pack 1:
-- asset-root resolution
-- manifest generation
-- `doctor --format json`
-- tiny synthetic source-root fixtures
+The MVP never downloads or vendors upstream assets. Pass `--asset-root`, set
+`ASIMOV_SIM_LAB_ASSET_ROOT`, or create an ignored local profile at
+`.asimov-sim-lab/profile.toml`.
+
+## Deferred
+
+- `open`
+- `capture`
+- local UI or web report viewer
+- controller examples
+- policy training
+- hardware fidelity or manufacturing claims

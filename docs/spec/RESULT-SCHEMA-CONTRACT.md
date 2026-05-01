@@ -7,10 +7,11 @@ The CLI, tests, CI, and any later UI layer need one stable output surface. This 
 Human-readable output is a view. JSON artifacts are the contract.
 
 ## Result families
-The MVP needs three result families:
+The MVP needs four result families:
 1. asset discovery / doctor
 2. inspection / model contract export
 3. validation
+4. structured domain errors for JSON-mode failures
 
 ## Shared envelope
 Every machine-readable result must include this top-level envelope:
@@ -38,13 +39,41 @@ class JointContract(BaseModel):
     axis: tuple[float, float, float] | None = None
     range_min: float | None = None
     range_max: float | None = None
+    ref: float | None = None
+    limited: bool | None = None
     passive: bool
 
 class ActuatorContract(BaseModel):
     name: str
-    joint_name: str
+    actuator_type: str
+    joint_name: str | None = None
     ctrl_min: float | None = None
     ctrl_max: float | None = None
+
+class MeshAssetContract(BaseModel):
+    name: str
+    file: str
+
+class SensorContract(BaseModel):
+    name: str
+    sensor_type: str
+    site: str | None = None
+    body: str | None = None
+    objtype: str | None = None
+    objname: str | None = None
+
+class CameraContract(BaseModel):
+    name: str
+    body: str
+    mode: str | None = None
+    pos: tuple[float, float, float] | None = None
+    quat: tuple[float, float, float, float] | None = None
+    fovy: float | None = None
+
+class SiteContract(BaseModel):
+    name: str
+    body: str
+    pos: tuple[float, float, float] | None = None
 
 class InspectResult(ResultEnvelope):
     command: Literal['inspect'] = 'inspect'
@@ -54,9 +83,16 @@ class InspectResult(ResultEnvelope):
     actuator_count: int
     sensor_count: int
     mesh_count: int
+    camera_count: int
+    site_count: int
+    total_declared_mass_kg: float | None = None
+    bodies: list[str]
+    meshes: list[MeshAssetContract]
     joints: list[JointContract]
     actuators: list[ActuatorContract]
-    sensors: list[str]
+    sensors: list[SensorContract]
+    cameras: list[CameraContract]
+    sites: list[SiteContract]
 ```
 
 ## Validation result contract
@@ -90,6 +126,12 @@ class DoctorResult(ResultEnvelope):
     resolved_asset_root: str | None = None
 ```
 
+## Error result contract
+```python
+class ErrorResult(ResultEnvelope):
+    issues: list[ValidationIssue]
+```
+
 ## Serialization rules
 - JSON must be UTF-8 encoded.
 - Key order does not matter semantically.
@@ -116,3 +158,4 @@ Every result must preserve enough provenance to answer:
 - multi-version backward compatibility at v0 beyond explicit schema checks
 - browser UI wire format design
 - video capture metadata contract in this phase
+- partial inspect contracts for malformed XML

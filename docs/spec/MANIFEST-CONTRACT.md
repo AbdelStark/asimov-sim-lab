@@ -31,9 +31,13 @@ from typing import Literal
 class SourceLocator(BaseModel):
     mode: Literal['local_checkout', 'release_snapshot']
     root_path: str
+    locator: str
     snapshot_id: str | None = None
     upstream_repo_url: str | None = None
     upstream_commit: str | None = None
+    upstream_branch: str | None = None
+    git_dirty: bool | None = None
+    git_untracked_count: int | None = None
 
 class XmlEntry(BaseModel):
     relative_path: str
@@ -62,7 +66,8 @@ class AssetManifest(BaseModel):
 - `generated_at_utc`: ISO-8601 UTC timestamp
 - `generator_version`: package version that emitted the manifest
 - `source.mode`: how the repo found the upstream assets
-- `source.root_path`: local resolved root used during the run
+- `source.root_path`: local resolved root used during the run; this is local diagnostic data and generated artifacts must not be committed
+- `source.locator`: whether the root came from CLI, profile, default profile, or env fallback
 - `primary_xml`: the exact MJCF entrypoint used for inspection
 - `meshes`: every discovered mesh file under the supported mesh root
 
@@ -73,6 +78,8 @@ class AssetManifest(BaseModel):
 4. Missing optional files may produce warnings.
 5. Missing required files must fail validation.
 6. Commands consuming the manifest must reject unknown future-major schema versions.
+7. Git metadata must be recorded when the asset root is itself a Git worktree root.
+8. Dirty or unpinned source provenance warns by default and fails under `--strict`.
 
 ## Supported upstream layout for MVP
 The MVP only promises support for this upstream shape:
@@ -104,3 +111,5 @@ The manifest must let a later command answer:
 
 ## First implementation cut
 The first implementation only needs to support local-checkout mode truthfully. Release-snapshot mode can remain declared but unimplemented if the CLI reports that clearly.
+
+Persisted manifests are evidence artifacts only in MVP. Commands regenerate manifests from the current local checkout and do not accept `--manifest-input`.

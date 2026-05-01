@@ -1,0 +1,33 @@
+<mujoco model="AsimovFixture">
+  <compiler angle="radian" meshdir="../assets/meshes"/>
+  <asset>
+    <mesh name="left_hip_pitch_link.STL" file="LEFT_HIP_PITCH.STL"/>
+    <mesh name="right_elbow_link.STL" file="RIGHT_ELBOW.STL"/>
+  </asset>
+  <worldbody>
+    <body name="pelvis_link" pos="0 0 0.63">
+      <freejoint name="floating_base"/>
+      <site name="imu_in_pelvis" pos="0 0 0"/>
+      <inertial mass="3.0" pos="0 0 0" fullinertia="1 1 1 0 0 0"/>
+      <geom name="pelvis_collision" type="capsule" fromto="0 0 0 0 0 0.1"/>
+      <body name="left_hip_pitch_link" pos="0 0 0">
+        <joint name="left_hip_pitch_joint" type="hinge" ref="0.25" range="-1 1" axis="0 1 0"/>
+        <inertial mass="1.5" pos="0 0 0" fullinertia="1 1 1 0 0 0"/>
+        <geom name="left_hip_pitch_visual" type="mesh" mesh="left_hip_pitch_link.STL"/>
+      </body>
+      <body name="right_elbow_link" pos="0 0 0">
+        <joint name="right_elbow_joint" type="hinge" ref="-0.5" range="-2 0" axis="0 1 0"/>
+        <inertial mass="0.5" pos="0 0 0" fullinertia="1 1 1 0 0 0"/>
+        <geom name="right_elbow_visual" type="mesh" mesh="right_elbow_link.STL"/>
+      </body>
+      <camera name="front_camera" mode="track" pos="2 0 1" quat="1 0 0 0" fovy="60"/>
+    </body>
+  </worldbody>
+  <actuator>
+    <motor name="left_hip_pitch" joint="left_hip_pitch_joint" ctrlrange="-10 10"/>
+  </actuator>
+  <sensor>
+    <gyro name="imu_ang_vel" site="imu_in_pelvis"/>
+    <subtreeangmom name="root_angmom" body="pelvis_link"/>
+  </sensor>
+</mujoco>

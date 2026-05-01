@@ -5,8 +5,12 @@ Define how the repo discovers, pins, mirrors, or validates upstream Asimov sourc
 
 ## Core questions
 - what is the minimum supported upstream asset set?
-- do we vendor a pinned fixture snapshot or fetch on demand?
 - how do generated artifacts record commit/source provenance?
+
+## Accepted MVP answers
+- minimum supported upstream asset set is `sim-model/xmls/asimov.xml`, `sim-model/assets/meshes/*.STL`, and optional `sim-model/README.md`
+- MVP uses explicit local checkout roots only
+- no vendored upstream assets and no fetch-on-demand behavior
 
 ## Contract
 - every derived artifact must record upstream source path(s)

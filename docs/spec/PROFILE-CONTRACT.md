@@ -50,7 +50,10 @@ image_format = "png"
 ## Precedence order
 1. explicit CLI flags
 2. explicit profile values
-3. repo defaults
+3. `ASIMOV_SIM_LAB_ASSET_ROOT`
+4. typed error with remediation
+
+When `--profile` is omitted, `.asimov-sim-lab/profile.toml` is loaded if it exists. The live `.asimov-sim-lab/` directory is ignored local state and must not be committed.
 
 ## First-cut implementation posture
 The initial runnable slice only needs to support:
@@ -58,6 +61,8 @@ The initial runnable slice only needs to support:
 - reading `default_asset_root`
 - reading `strict_validation`
 - ignoring viewer/capture sections unless the command needs them
+- no profile writing
+- stdlib `tomllib` only
 
 ## Failure codes tied to profiles
 - `PROFILE_NOT_FOUND`

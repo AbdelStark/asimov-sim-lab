@@ -21,3 +21,6 @@ The RFCs are now complemented by phase-2 implementation contracts in `docs/spec/
 - `FIRST-THREE-SCENARIOS-BUILD-PACK.md`
 
 Read those before writing implementation code. The goal now is not more architecture prose. The goal is to ship work pack 1 cleanly.
+
+## MVP decision log
+`docs/spec/MVP-DECISION-LOG.md` is the accepted decision record for the current MVP implementation. If an older RFC phrase conflicts with that file, the decision log and executable schema/tests win until the RFC is revised.

@@ -1,0 +1,6 @@
+schema_version = "0.1.0"
+name = "out-of-range"
+description = "Invalid test preset."
+
+[joints]
+left_hip_pitch_joint = 5.0

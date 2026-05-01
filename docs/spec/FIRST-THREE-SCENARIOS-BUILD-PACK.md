@@ -86,3 +86,12 @@ The early goal is contract correctness, not proving full upstream compatibility 
 
 ## Exit condition for phase 3 start
 When these three work packs are locked, coding can begin without re-arguing repo shape, result schemas, or CLI semantics.
+
+## Implementation expansion
+The interactive decision pass expanded the first implementation from work pack 1 only to the full MVP core:
+- work pack 1: asset discovery and doctor
+- work pack 2: MJCF inspection contract export
+- work pack 3: validation and presets
+- schema generation, CI gates, examples, contribution docs, and optional real-upstream smoke
+
+The expansion does not include deferred viewer, UI, capture, controller, or policy-training work.

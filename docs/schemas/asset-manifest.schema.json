@@ -1,0 +1,215 @@
+{
+  "$defs": {
+    "MeshEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "referenced_by": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Referenced By",
+          "type": "array"
+        },
+        "relative_path": {
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "relative_path",
+        "sha256",
+        "size_bytes"
+      ],
+      "title": "MeshEntry",
+      "type": "object"
+    },
+    "SourceLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "git_dirty": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Git Dirty"
+        },
+        "git_untracked_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Git Untracked Count"
+        },
+        "locator": {
+          "title": "Locator",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "local_checkout",
+            "release_snapshot"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "root_path": {
+          "title": "Root Path",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Snapshot Id"
+        },
+        "upstream_branch": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upstream Branch"
+        },
+        "upstream_commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upstream Commit"
+        },
+        "upstream_repo_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upstream Repo Url"
+        }
+      },
+      "required": [
+        "mode",
+        "root_path",
+        "locator"
+      ],
+      "title": "SourceLocator",
+      "type": "object"
+    },
+    "XmlEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "relative_path": {
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "relative_path",
+        "sha256",
+        "size_bytes"
+      ],
+      "title": "XmlEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "generated_at_utc": {
+      "title": "Generated At Utc",
+      "type": "string"
+    },
+    "generator_version": {
+      "default": "0.1.0",
+      "title": "Generator Version",
+      "type": "string"
+    },
+    "meshes": {
+      "items": {
+        "$ref": "#/$defs/MeshEntry"
+      },
+      "title": "Meshes",
+      "type": "array"
+    },
+    "primary_xml": {
+      "$ref": "#/$defs/XmlEntry"
+    },
+    "readme_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Readme Path"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/SourceLocator"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "source",
+    "primary_xml",
+    "meshes"
+  ],
+  "title": "AssetManifest",
+  "type": "object"
+}

@@ -1,0 +1,15 @@
+schema_version = "0.1.0"
+name = "local-dev"
+default_asset_root = "/absolute/path/to/asimov-v1"
+default_output_dir = "reports"
+strict_validation = true
+
+[viewer]
+autostart = false
+camera = "front_camera"
+width = 1600
+height = 900
+
+[capture]
+default_pose = "neutral"
+image_format = "png"

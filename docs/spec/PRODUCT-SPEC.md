@@ -1,343 +1,169 @@
 # PRODUCT-SPEC — Asimov Sim Lab
 
-    ## One-line thesis
-    Turn the public Asimov v1 MuJoCo release into a serious developer-facing inspection, validation, and capture tool before any controller or policy work begins.
+## One-line thesis
 
-    ## Product shape
-    CLI-first Python package with MuJoCo viewer integration and optional local UI panels.
+Turn a local Asimov v1 MuJoCo checkout into a serious developer-facing inspection, validation, and evidence tool before any viewer, controller, policy, or demo surface is built.
 
-    ## Repo strategy
-    uv-managed Python package with CLI commands for inspect/validate/open/capture, schema-backed preset data, and CI-grade contract validation.
+## Product shape
 
-    ## Primary source assets
-    - `sim-model/xmls/asimov.xml`
-- `sim-model/assets/meshes/*.STL`
-- `sim-model/README.md`
+CLI-first Python package with a narrow public Python API, schema-backed JSON outputs, deterministic Markdown inspection reports, and optional future MuJoCo viewer support behind a `viewer` extra.
 
-    ## Users
-    - robotics developers and contributors working around the public Asimov release
-    - technical evaluators who need proof that the project is grounded in real upstream assets
-    - future collaborators who need stable contracts before they write code
+## Users
 
-    ## MVP promise
-    - the repo should define a truthful, testable, implementation-ready contract
-    - the repo should not overstate what is already built
-    - the first implementation should stay narrow and evidence-producing
+- robotics developers inspecting the public Asimov v1 simulation model
+- contributors validating MJCF and mesh-facing changes
+- technical reviewers who need reproducible evidence that reports came from real source assets
+- future UI/reporting layers that need stable machine-readable contracts
 
-    ## Phase-2 lock note
-    This document captures the full product direction. It is not the same thing as the next implementation slice.
+## MVP promise
 
-    The currently locked implementation truth lives in:
-    - `docs/spec/MANIFEST-CONTRACT.md`
-    - `docs/spec/RESULT-SCHEMA-CONTRACT.md`
-    - `docs/spec/CLI-COMMAND-SPEC.md`
-    - `docs/spec/PROFILE-CONTRACT.md`
-    - `docs/spec/FIRST-THREE-SCENARIOS-BUILD-PACK.md`
+- locate an explicit local upstream checkout
+- generate a fresh asset manifest with checksums and provenance
+- export a concrete MJCF model contract
+- validate mesh, actuator, sensor, joint-range, and preset references
+- publish committed JSON Schemas for result artifacts
+- prove happy and broken paths with tiny synthetic fixtures
+- keep public docs aligned with shipped behavior
 
-    In plain terms:
-    - `open` and `capture` remain product-direction commands
-    - the next implementation pass is work pack 1 only, starting with `doctor` and asset-manifest truth
+## Non-goals
 
-    ## Non-goals for this phase
-    - no premature full product implementation
-    - no marketing-site fluff
-    - no fake benchmark/demo theater
-    - no claims that exceed upstream data quality or scope
-
-    ## Demo target
-    Open the Asimov model locally, print a model contract, validate presets, and emit reproducible screenshots.
-
-    ## Risks to manage early
-    - upstream source assets can drift
-    - licensing / attribution and redistribution boundaries must stay explicit
-    - UI scope can explode if contracts are not locked first
-    - the repo must remain useful even before secondary UX surfaces exist
-
-    ## Acceptance criteria for phase 1
-    - repo exists privately on GitHub
-    - local clone exists
-    - uv project scaffold is coherent
-    - product/spec docs exist and agree with each other
-    - RFC set covers architecture, contracts, validation, evidence, and release posture
-    - implementation plan is concrete enough that coding becomes mostly mechanical
-
-    ## Upstream PRD snapshot
-
-    ```md
-    # PRD: Asimov Sim Lab
-
-## Summary
-
-Asimov Sim Lab is an external developer tool and showcase for inspecting, validating, and experimenting with the Asimov v1 MuJoCo model. It provides a one-command local environment, model contract reports, joint sliders, preset poses, screenshots, and small control examples built around `sim-model/xmls/asimov.xml`.
-
-The product should help robotics developers understand the public simulation model before writing controllers or training policies.
-
-## Problem
-
-The Asimov v1 repository includes a MuJoCo model and mesh assets, but a user still needs to manually inspect the XML or open the viewer to understand the model:
-
-- Joint names, actuator names, torque ranges, sensors, and mesh references are not surfaced as a contract.
-- Users need quick ways to inspect joint limits, axis signs, passive joints, and default poses.
-- Screenshots or reproducible issue reports require manual setup.
-- Beginners may not know whether their local MuJoCo environment loaded the model correctly.
-- Contributors need a focused harness for validating simulator-facing changes.
-
-## Goals
-
-- Provide a one-command local launch path for the Asimov v1 MuJoCo model.
-- Generate a model contract report from MJCF.
-- Provide an interactive joint control UI.
-- Provide preset poses for quick inspection.
-- Capture screenshots or short videos for issues, docs, and demos.
-- Validate mesh references, joint references, actuators, and sensors.
-- Keep the tool useful without requiring policy training infrastructure.
-
-## Non-Goals
-
-- Do not train a locomotion policy in MVP.
-- Do not claim physical fidelity beyond the upstream model.
-- Do not modify the upstream MJCF automatically.
-- Do not implement a full robotics simulator platform.
-- Do not require GPU acceleration for the base inspection workflow.
-
-## Target Users
-
-- Robotics developers exploring Asimov v1.
-- Contributors validating MJCF and mesh changes.
-- Policy researchers preparing control experiments.
-- Community users creating screenshots, demos, or bug reports.
+- no controller, policy-training, RL, imitation-learning, or ML benchmark work
+- no `open`, `capture`, screenshot, video, local UI, or web report viewer
+- no automatic upstream download or hidden sibling discovery
+- no vendored upstream XML or mesh assets
+- no claims about hardware fidelity, manufacturing readiness, electrical safety, or policy performance
 
 ## Source Assets
 
-Primary inputs:
+The MVP supports this upstream layout only:
 
-- `sim-model/xmls/asimov.xml`
-- `sim-model/assets/meshes/*.STL`
-- `sim-model/README.md`
+```text
+<asset-root>/
+  sim-model/
+    xmls/asimov.xml
+    assets/meshes/*.STL
+    README.md
+```
 
-Optional generated inputs:
+`--asset-root` means the upstream checkout root that contains `sim-model/`. Passing `sim-model/` directly is unsupported.
 
-- `model_contract.json`
-- screenshot outputs
-- pose preset files
-- rendered preview thumbnails
-
-## Product Requirements
-
-### One-Command Launch
-
-Status:
-- product direction, not phase-3 day-one scope
-
-- Provide a CLI command:
+## Commands
 
 ```bash
-asimov-sim-lab open
+asimov-sim-lab doctor --asset-root /path/to/asimov-v1 --format json
+asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --json
+asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --markdown
+asimov-sim-lab validate --asset-root /path/to/asimov-v1 --format json
 ```
 
-- It should:
-  - locate the Asimov v1 sim assets
-  - verify mesh references
-  - open the MuJoCo viewer
-  - print a short model summary
+Asset-root precedence:
 
-### Model Contract Report
+1. `--asset-root`
+2. profile `default_asset_root`
+3. `ASIMOV_SIM_LAB_ASSET_ROOT`
+4. typed error with remediation
 
-- Parse the MJCF and output:
-  - model name
-  - mesh count
-  - body count
-  - joint count
-  - actuator count
-  - sensor count
-  - joint names and ranges
-  - actuator names, joint refs, and control ranges
-  - passive joints
-  - missing files or invalid references
+## Data Contracts
 
-- Support:
+JSON artifacts are the source of truth. Text and Markdown are renderings.
 
-```bash
-asimov-sim-lab inspect --json
-asimov-sim-lab inspect --markdown
-```
+Committed schemas:
 
-### Joint Inspector UI
+- `docs/schemas/asset-manifest.schema.json`
+- `docs/schemas/doctor-result.schema.json`
+- `docs/schemas/error-result.schema.json`
+- `docs/schemas/inspect-result.schema.json`
+- `docs/schemas/validation-result.schema.json`
 
-- Provide an interactive UI with:
-  - joint sliders
-  - limit markers
-  - neutral/reset action
-  - preset pose selector
-  - body and actuator metadata panel
-- Sliders must clamp to MJCF joint ranges.
-- Passive joints should be visually distinguished from motorized joints.
+Every result includes schema version, tool version, generated timestamp, command, status, warnings, and enough provenance to identify the local source checkout.
 
-### Preset Poses
+## Inspection Contract
 
-MVP preset poses:
+`inspect` uses standard XML parsing and exports concrete model elements only. MJCF defaults/templates do not count as robot joints or bodies.
 
-- neutral
-- crouch
-- left arm raise
-- right arm raise
-- toe flex
-- seated inspection pose, if physically plausible in the model
+MVP fields include:
 
-Each preset should be stored as data, not hardcoded only in UI logic.
+- model name
+- body, joint, actuator, sensor, mesh, camera, and site counts
+- concrete body names
+- mesh asset names and files
+- joint names, bodies, types, axes, ranges, refs, limited flags, and passive flags
+- generic actuator type, name, joint target, and control range
+- minimal sensor target metadata
+- minimal camera and site metadata
+- optional `total_declared_mass_kg`, clearly scoped to declared XML mass values
 
-### Capture Tools
+`passive` means no actuator targets the joint. `floating_base` is passive and distinguished with `joint_type="free"`.
 
-Status:
-- deferred beyond the first implementation slice
+## Validation Contract
 
-- Capture screenshot from a named camera.
-- Save image output with model commit metadata.
-- Later: record short videos of preset transitions.
+`validate` derives references from the current XML on every run. It validates:
 
-Example:
+- supported source layout
+- mesh files referenced by MJCF asset declarations
+- geom mesh references to declared mesh assets
+- actuator joint references
+- sensor site/body/object references
+- limited or preset-targetable hinge/slide ranges
+- built-in neutral preset
+- optional local TOML presets via `--preset-dir`
 
-```bash
-asimov-sim-lab capture --camera side_camera --pose neutral --output neutral-side.png
-```
+Warnings do not fail by default. `--strict` escalates defined evidence-quality warnings such as dirty/unpinned provenance or missing optional upstream evidence.
 
-### Validation
+## Presets
 
-The tool must validate:
+MVP presets are TOML only. The package ships an inferred built-in `neutral` preset:
 
-- all MJCF mesh files exist
-- all actuator joint refs exist
-- all sensor refs exist where applicable
-- all joint ranges are parseable
-- all preset poses reference existing joints
-- all preset values stay within joint limits
+- use `joint@ref` when present and inside range
+- otherwise use `0.0` when inside range
+- otherwise omit the joint and warn
 
-## UX Requirements
+Additional local presets can be validated from a directory, one preset per TOML file.
 
-- First screen should show the loaded robot, joint controls, and model status.
-- Use dense, developer-oriented panels rather than a landing page.
-- Make model status obvious:
-  - loaded
-  - missing mesh
-  - invalid actuator reference
-  - preset out of range
-- Use clear labels matching MJCF joint and actuator names.
-- Provide copyable reports for GitHub issues.
-
-## Data Model
-
-```python
-@dataclass
-class JointInfo:
-    name: str
-    joint_type: str
-    range: tuple[float, float] | None
-    axis: tuple[float, float, float] | None
-    body: str
-    passive: bool
-
-@dataclass
-class ActuatorInfo:
-    name: str
-    joint: str
-    ctrlrange: tuple[float, float] | None
-
-@dataclass
-class ModelContract:
-    model_name: str
-    meshes: list[str]
-    joints: list[JointInfo]
-    actuators: list[ActuatorInfo]
-    sensors: list[str]
-```
-
-## Technical Architecture
-
-Recommended stack:
-
-- Python package for CLI, MJCF parsing, validation, and MuJoCo launch.
-- `mujoco` Python package for simulation and viewer launch.
-- Optional Streamlit, NiceGUI, or lightweight local web UI for joint sliders.
-- `pytest` for parser, validator, and preset tests.
-- GitHub Actions with a headless validation path.
-
-Repository structure:
+## Architecture
 
 ```text
 asimov-sim-lab/
-├── src/
-│   └── asimov_sim_lab/
-│       ├── cli.py
-│       ├── assets.py
-│       ├── inspect.py
-│       ├── presets.py
-│       ├── validation.py
-│       └── viewer.py
-├── presets/
-│   ├── neutral.json
-│   ├── crouch.json
-│   └── arm_raise.json
-├── tests/
-└── README.md
+├── docs/
+│   ├── examples/
+│   ├── rfcs/
+│   ├── schemas/
+│   └── spec/
+├── scripts/
+│   └── generate_schemas.py
+├── src/asimov_sim_lab/
+│   ├── cli.py
+│   ├── config.py
+│   ├── doctor.py
+│   ├── errors.py
+│   ├── inspect.py
+│   ├── manifest.py
+│   ├── models.py
+│   ├── paths.py
+│   ├── presets.py
+│   └── validation.py
+└── tests/
+    └── fixtures/
 ```
 
-## MVP Scope
+## Quality Gates
 
-1. CLI package with `doctor`, `inspect`, and `validate`.
-2. Asset locator that supports a local `asimov-v1` checkout path.
-3. Model contract generation.
-4. Mesh, actuator, sensor, and preset validation.
-5. Basic preset pose files.
-6. README with one-command launch and validation examples.
+- `uv lock --check`
+- `uv run ruff format --check .`
+- `uv run ruff check .`
+- `uv run mypy`
+- `uv run pytest`
+- `uv run python scripts/generate_schemas.py`
+- `git diff --exit-code -- docs/schemas`
+- `uv build`
+- `uv run pip-audit --skip-editable`
 
-## First implementation slice
+CI uses synthetic fixtures only. Real upstream smoke is optional and gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
 
-Before the broader MVP lands, the next shipped slice is narrower:
+## Deferred V1 Surface
 
-1. asset-root resolution
-2. manifest-backed `doctor`
-3. tiny synthetic fixtures proving typed failures
-
-`open` and `capture` are intentionally deferred until the source-contract path is stable.
-
-## V1 Scope
-
-- `open` command for local viewer launch.
-- Joint slider UI.
-- Screenshot capture by camera and pose.
-- Short video capture of pose transitions.
-- Web-hosted report viewer for `model_contract.json`.
-- GitHub issue bundle generation with contract report and screenshot.
-
-## Success Metrics
-
-- A user can validate the model in one command.
-- A user can inspect all joints and actuators without reading the MJCF manually.
-- Preset poses are validated against joint limits in CI.
-- Missing mesh and invalid joint references produce clear actionable errors.
-- A screenshot for a named camera can be generated reproducibly.
-
-## Validation Plan
-
-- Unit test MJCF parsing against the current Asimov XML.
-- Unit test missing mesh and invalid actuator fixtures.
-- Unit test preset values against joint ranges.
-- Run `asimov-sim-lab inspect --json` in CI.
-- Run a headless MuJoCo model load test if the CI environment supports it.
-- Keep viewer launch as a local smoke test when headless rendering is unavailable.
-
-## Risks
-
-- MuJoCo viewer behavior can vary by OS and graphics stack.
-- Headless rendering may require extra CI dependencies.
-- Users may interpret preset poses as validated physical motions.
-- The upstream model may change joint names or ranges.
-- Bundling mesh assets directly may create large external releases.
-
-## Open Questions
-
-- Should the first release require a local clone of `asimov-v1`, or download release assets automatically?
-- Should the UI be desktop-native, browser-based, or CLI-first?
-- Should screenshots use MuJoCo cameras only, or also custom camera presets?
-- Should model reports include mass/inertia summaries in MVP?
-    ```
+- local MuJoCo `open` command
+- capture/screenshot/video contracts
+- report viewer or UI
+- richer physical summaries from compiled MuJoCo state
+- issue bundle generation

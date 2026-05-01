@@ -29,6 +29,14 @@ asimov-sim-lab validate
 --strict / --no-strict    Escalate warnings into failures where applicable
 ```
 
+Asset-root precedence:
+1. explicit `--asset-root`
+2. explicit or default profile `default_asset_root`
+3. `ASIMOV_SIM_LAB_ASSET_ROOT`
+4. typed error
+
+There is no sibling auto-discovery in MVP.
+
 ## `doctor`
 Purpose:
 - verify package wiring
@@ -86,6 +94,7 @@ Expected behavior:
 Example:
 ```bash
 asimov-sim-lab validate --asset-root /path/to/asimov-v1 --format json
+asimov-sim-lab validate --asset-root /path/to/asimov-v1 --preset-dir ./presets --format json
 ```
 
 ## Deferred commands
@@ -95,7 +104,7 @@ These are intentionally named now but not promised in this phase:
 - `preset validate`
 - `preset list`
 
-If the CLI includes placeholders for these later, they must say `not implemented yet` plainly instead of implying partial support.
+The CLI should omit deferred commands until they have real behavior, tests, and contracts.
 
 ## Exit codes
 - `0`: success, including warnings-only validation
@@ -110,3 +119,5 @@ The first implementation must cover:
 - `inspect --json` shape
 - `validate --format json` pass/fail semantics
 - one broken fixture path per major validation error family
+- conflicting format flags exit `2`
+- JSON-mode domain failures emit structured error results

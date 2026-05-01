@@ -1,0 +1,551 @@
+{
+  "$defs": {
+    "ActuatorContract": {
+      "additionalProperties": false,
+      "properties": {
+        "actuator_type": {
+          "title": "Actuator Type",
+          "type": "string"
+        },
+        "ctrl_max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ctrl Max"
+        },
+        "ctrl_min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ctrl Min"
+        },
+        "joint_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Joint Name"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "actuator_type"
+      ],
+      "title": "ActuatorContract",
+      "type": "object"
+    },
+    "CameraContract": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "title": "Body",
+          "type": "string"
+        },
+        "fovy": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fovy"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mode"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "pos": {
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pos"
+        },
+        "quat": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quat"
+        }
+      },
+      "required": [
+        "name",
+        "body"
+      ],
+      "title": "CameraContract",
+      "type": "object"
+    },
+    "JointContract": {
+      "additionalProperties": false,
+      "properties": {
+        "axis": {
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Axis"
+        },
+        "body": {
+          "title": "Body",
+          "type": "string"
+        },
+        "joint_type": {
+          "title": "Joint Type",
+          "type": "string"
+        },
+        "limited": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limited"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "passive": {
+          "title": "Passive",
+          "type": "boolean"
+        },
+        "range_max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Range Max"
+        },
+        "range_min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Range Min"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        }
+      },
+      "required": [
+        "name",
+        "body",
+        "joint_type",
+        "passive"
+      ],
+      "title": "JointContract",
+      "type": "object"
+    },
+    "MeshAssetContract": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "file"
+      ],
+      "title": "MeshAssetContract",
+      "type": "object"
+    },
+    "SensorContract": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "objname": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Objname"
+        },
+        "objtype": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Objtype"
+        },
+        "sensor_type": {
+          "title": "Sensor Type",
+          "type": "string"
+        },
+        "site": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Site"
+        }
+      },
+      "required": [
+        "name",
+        "sensor_type"
+      ],
+      "title": "SensorContract",
+      "type": "object"
+    },
+    "SiteContract": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "title": "Body",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "pos": {
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pos"
+        }
+      },
+      "required": [
+        "name",
+        "body"
+      ],
+      "title": "SiteContract",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "actuator_count": {
+      "title": "Actuator Count",
+      "type": "integer"
+    },
+    "actuators": {
+      "items": {
+        "$ref": "#/$defs/ActuatorContract"
+      },
+      "title": "Actuators",
+      "type": "array"
+    },
+    "bodies": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Bodies",
+      "type": "array"
+    },
+    "body_count": {
+      "title": "Body Count",
+      "type": "integer"
+    },
+    "camera_count": {
+      "title": "Camera Count",
+      "type": "integer"
+    },
+    "cameras": {
+      "items": {
+        "$ref": "#/$defs/CameraContract"
+      },
+      "title": "Cameras",
+      "type": "array"
+    },
+    "command": {
+      "const": "inspect",
+      "default": "inspect",
+      "title": "Command",
+      "type": "string"
+    },
+    "generated_at_utc": {
+      "title": "Generated At Utc",
+      "type": "string"
+    },
+    "joint_count": {
+      "title": "Joint Count",
+      "type": "integer"
+    },
+    "joints": {
+      "items": {
+        "$ref": "#/$defs/JointContract"
+      },
+      "title": "Joints",
+      "type": "array"
+    },
+    "mesh_count": {
+      "title": "Mesh Count",
+      "type": "integer"
+    },
+    "meshes": {
+      "items": {
+        "$ref": "#/$defs/MeshAssetContract"
+      },
+      "title": "Meshes",
+      "type": "array"
+    },
+    "model_name": {
+      "title": "Model Name",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sensor_count": {
+      "title": "Sensor Count",
+      "type": "integer"
+    },
+    "sensors": {
+      "items": {
+        "$ref": "#/$defs/SensorContract"
+      },
+      "title": "Sensors",
+      "type": "array"
+    },
+    "site_count": {
+      "title": "Site Count",
+      "type": "integer"
+    },
+    "sites": {
+      "items": {
+        "$ref": "#/$defs/SiteContract"
+      },
+      "title": "Sites",
+      "type": "array"
+    },
+    "source_manifest_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Manifest Path"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tool_version": {
+      "default": "0.1.0",
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "total_declared_mass_kg": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Total Declared Mass Kg"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "model_name",
+    "body_count",
+    "joint_count",
+    "actuator_count",
+    "sensor_count",
+    "mesh_count",
+    "camera_count",
+    "site_count",
+    "bodies",
+    "meshes",
+    "joints",
+    "actuators",
+    "sensors",
+    "cameras",
+    "sites"
+  ],
+  "title": "InspectResult",
+  "type": "object"
+}
