@@ -39,6 +39,14 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 
 Both directories are ignored local state. Review them before publishing or attaching them.
 
+Generate the sanitized release-candidate dry-run report:
+
+```bash
+ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
+```
+
+The report is committed at `docs/spec/RELEASE-CANDIDATE-DRY-RUN.md`. It records archive SHA-256, evidence-bundle SHA-256, runtime/validation status, warnings, blockers, and the verification command without embedding local output paths.
+
 ## Export Package Verification
 
 Every release-candidate export directory must pass:
@@ -64,6 +72,7 @@ Attach or preserve:
 - `export-package-result.json`
 - `export-package-manifest.json`
 - `asimov-sim-lab-evidence.tar.gz`
+- `docs/spec/RELEASE-CANDIDATE-DRY-RUN.md`
 - command transcript or CI link showing `make check`
 - command transcript or CI/local log showing `check_release_evidence.py` passed
 
@@ -90,7 +99,7 @@ Do not tag or publish if any of these are true:
 - export evidence has `validation_passed=false`
 - export evidence has `runtime_smoke_status=error`
 - source checkout provenance is dirty or unlicensed and the release notes do not explicitly disclose it
-- release notes claim viewer, capture, controller, policy, hardware, safety, or manufacturing readiness
+- release notes claim interactive viewer launch, capture, controller, policy, hardware, safety, or manufacturing readiness
 
 ## Review Checklist
 
@@ -99,6 +108,7 @@ Do not tag or publish if any of these are true:
 - [ ] real-upstream `make smoke-real` passed
 - [ ] export package checker passed
 - [ ] `export-package-result.json` archive SHA-256 recorded in release notes
+- [ ] `docs/spec/RELEASE-CANDIDATE-DRY-RUN.md` refreshed from the candidate export
 - [ ] runtime smoke status documented
 - [ ] known warnings documented
 - [ ] `CHANGELOG.md` reflects user-visible changes

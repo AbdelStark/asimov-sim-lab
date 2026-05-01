@@ -22,6 +22,8 @@ cli.py
   |
   +-- runtime.py ------ optional MuJoCo compiled-runtime smoke
   |
+  +-- viewer.py ------- preflight-only viewer/open readiness checks
+  |
   +-- evidence.py ----- checksummed evidence bundle directory
   |
   +-- export.py ------- deterministic evidence export archive
@@ -38,9 +40,10 @@ models.py ------------ Pydantic public contracts and JSON Schemas
 4. `inspect.py` parses `sim-model/xmls/asimov.xml` into an `InspectResult`.
 5. `validation.py` derives validation issues from the current XML and inspect contract.
 6. `runtime.py` can compile the canonical MJCF through the optional MuJoCo package and returns a typed `RuntimeSmokeResult`; when MuJoCo is absent, the default behavior is an explicit skipped warning.
-7. `evidence.py` can write the manifest, inspect result, validation result, runtime-smoke result, Markdown report, and bundle index into one checksummed evidence directory.
-8. `export.py` can generate a portable evidence directory plus a deterministic `tar.gz` archive and package manifest.
-9. The CLI emits text, Markdown, or JSON and optionally writes artifacts atomically.
+7. `viewer.py` can run the `open` preflight contract, combining validation, preset checks, optional provenance gates, and required MuJoCo compilation without launching a GUI.
+8. `evidence.py` can write the manifest, inspect result, validation result, runtime-smoke result, Markdown report, and bundle index into one checksummed evidence directory.
+9. `export.py` can generate a portable evidence directory plus a deterministic `tar.gz` archive and package manifest.
+10. The CLI emits text, Markdown, or JSON and optionally writes artifacts atomically.
 
 ## Public Contracts
 
@@ -53,6 +56,7 @@ Current contract families:
 - `InspectResult`
 - `ValidationResult`
 - `RuntimeSmokeResult`
+- `ViewerOpenResult`
 - `EvidenceBundleResult`
 - `ExportPackageManifest`
 - `ExportPackageResult`
@@ -79,6 +83,7 @@ uv run python scripts/check_error_registry.py --check
 - The inspect contract exports concrete MJCF elements only. Defaults/templates are not counted as robot bodies or joints.
 - Validation errors are typed `ValidationIssue` objects, not free-form log strings.
 - Runtime smoke is intentionally limited to optional MuJoCo import and MJCF compilation. It is not a simulation, controller, safety, or policy-performance claim.
+- Viewer/open is intentionally limited to preflight readiness. It validates source, preset, provenance gates, and required MuJoCo compilation, then exits with `opened=false`.
 - Markdown reports are derived from `InspectResult`; they are not independent truth.
 - Evidence bundles list artifact checksums in `evidence-bundle.json`; the bundle index is the review handle, not a replacement for the JSON contracts it references.
 - Export packages normalize generated timestamps, evidence bundle paths, tar metadata, owner IDs, and gzip metadata by default so identical inputs produce identical archive bytes.
@@ -96,6 +101,7 @@ uv run python scripts/check_error_registry.py --check
 - Sensor object references are validated against the correct MJCF namespace: bodies, joints, sites, cameras, and concrete geoms.
 - Generated schemas must match the committed model definitions.
 - Local profile paths and asset roots are operator-local inputs, not portable public evidence by themselves.
+- Interactive viewer launch must not be added by flipping `opened=true`; it needs explicit lifecycle, shutdown, and failure-mode tests first.
 
 ## Failure Modes
 
@@ -110,6 +116,12 @@ uv run python scripts/check_error_registry.py --check
 - `OUTPUT_WRITE_FAILED`: the command could not create, write, or atomically replace an output file.
 - `MUJOCO_NOT_INSTALLED`: optional MuJoCo runtime is unavailable for a runtime smoke check.
 - `MUJOCO_MODEL_LOAD_FAILED`: MuJoCo was available but could not compile the canonical MJCF.
+- `VIEWER_EXTRA_NOT_INSTALLED`: `open` required MuJoCo, but the optional viewer runtime is unavailable.
+- `VIEWER_LAUNCH_FAILED`: `open` reached MuJoCo but preflight model loading failed.
+- `VIEWER_LICENSE_MISSING`: `open --require-license` could not find an upstream root license.
+- `VIEWER_PRESET_NOT_FOUND`: `open --preset` requested a preset that could not be loaded.
+- `VIEWER_SOURCE_DIRTY`: `open --require-clean-source` found dirty source provenance.
+- `VIEWER_VALIDATION_FAILED`: `open` validation failed before runtime preflight.
 - `EVIDENCE_OUTPUT_NOT_DIRECTORY`: `--output-dir` points at a non-directory path.
 - `EVIDENCE_OUTPUT_NOT_EMPTY`: `--output-dir` is non-empty and `--overwrite` was not passed.
 - `EXPORT_OUTPUT_NOT_DIRECTORY`: export `--output-dir` points at a non-directory path.
@@ -136,6 +148,7 @@ uv run asimov-sim-lab doctor --asset-root /absolute/path/to/asimov-v1 --format j
 uv run asimov-sim-lab inspect --asset-root /absolute/path/to/asimov-v1 --json
 uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --format json
 uv run asimov-sim-lab runtime-smoke --asset-root /absolute/path/to/asimov-v1 --allow-missing-mujoco --format json
+uv run asimov-sim-lab open --asset-root /absolute/path/to/asimov-v1 --format json
 uv run asimov-sim-lab evidence --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --overwrite --format json
 uv run asimov-sim-lab export --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/export --overwrite --format json
 ```
@@ -167,6 +180,12 @@ Release-candidate export packages must also pass:
 uv run python scripts/check_release_evidence.py --export-dir .asimov-sim-lab/smoke-real-export
 ```
 
+The sanitized dry-run report is generated with:
+
+```bash
+ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
+```
+
 The release-candidate policy is `docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md`.
 
 ### Optional Real-Upstream Smoke
@@ -185,13 +204,13 @@ The smoke target also writes `.asimov-sim-lab/smoke-real-evidence/` and `.asimov
 - `.env` and `.asimov-sim-lab/` are ignored local state.
 - JSON artifacts and evidence bundle indexes may include absolute local source paths in provenance fields. Treat generated artifacts as local diagnostics unless paths have been reviewed for publication.
 - Export package archives normalize generated bundle output paths, but source provenance can still include absolute local asset roots.
-- The tool does not open network connections. `runtime-smoke` imports MuJoCo only when installed and asks MuJoCo to compile the local XML; it does not open a viewer or execute control code.
+- The tool does not open network connections. `runtime-smoke` and `open` import MuJoCo only when installed and ask MuJoCo to compile the local XML; neither command opens a viewer window or executes control code.
 
 ## Current Boundaries
 
 Deferred until separate contracts exist:
 
-- MuJoCo viewer command
+- interactive MuJoCo viewer launch
 - screenshot, video, or capture artifacts
 - local web UI or report viewer
 - controller or policy-training workflows

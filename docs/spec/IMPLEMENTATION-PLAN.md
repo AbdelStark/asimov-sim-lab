@@ -18,6 +18,9 @@ Contract-first. The MVP core is now implemented, so future work should harden co
 10. CI fixture evidence/export generation with retained workflow artifacts.
 11. Enforced diagnostic-code registry and release-candidate evidence verifier.
 12. Viewer/open RFC defining the required preflight contract before implementation.
+13. Preflight-only `open` command with `ViewerOpenResult`, viewer-specific errors, tests, and schema.
+14. Release-candidate dry-run report generation from a verified real-upstream export package.
+15. JSON-mode domain errors linking back to the public diagnostic-code registry.
 
 ## Current module ownership
 
@@ -29,6 +32,7 @@ Contract-first. The MVP core is now implemented, so future work should harden co
 - `validation.py`: validation issue generation.
 - `presets.py`: built-in neutral preset and local preset validation.
 - `runtime.py`: optional MuJoCo runtime smoke checks.
+- `viewer.py`: preflight-only viewer/open readiness checks.
 - `artifacts.py`: atomic writes and checksum helpers.
 - `evidence.py`: evidence bundle generation.
 - `export.py`: deterministic export package generation.
@@ -47,14 +51,15 @@ Contract-first. The MVP core is now implemented, so future work should harden co
 - evidence bundles must list checksums for every generated review artifact
 - deterministic export archives must not embed local output-directory paths
 - runtime smoke must stay dependency-gated and must not become a viewer, simulation, or controller claim
+- `open` must remain preflight-only until interactive GUI lifecycle, shutdown, and failure behavior are specified and tested
 - emitted diagnostic codes must be registered and mechanically checked
 - release-candidate export packages must pass `scripts/check_release_evidence.py`
 
 ## Next implementation sequence
 
-1. Implement the `RFC-0008` viewer/open preflight contract without adding capture, controller, or policy surfaces.
-2. Add a release-candidate dry-run report that records the verified real-upstream archive SHA-256 and known warnings.
-3. Improve error-code ergonomics by linking JSON-mode failures to registry documentation.
+1. Add a publication-safe evidence review guide for release attachments and absolute-path provenance.
+2. Add alpha schema compatibility policy and tests that make accidental schema-version drift visible.
+3. Design the interactive viewer launch extension using current `open` preflight telemetry; do not implement GUI launch until lifecycle semantics are accepted.
 
 ## Implementation decisions
 

@@ -14,7 +14,8 @@ The MVP needs four result families:
 4. optional runtime smoke
 5. evidence bundle summaries
 6. deterministic export package summaries
-7. structured domain errors for JSON-mode failures
+7. preflight-only viewer/open summaries
+8. structured domain errors for JSON-mode failures
 
 ## Shared envelope
 Every machine-readable result must include this top-level envelope:
@@ -202,6 +203,27 @@ class ExportPackageResult(ResultEnvelope):
     runtime_smoke_skipped: bool
 ```
 
+## Viewer/open preflight result contract
+```python
+class ViewerOpenResult(ResultEnvelope):
+    command: Literal['open'] = 'open'
+    runtime: Literal['mujoco'] = 'mujoco'
+    runtime_version: str | None = None
+    xml_path: str
+    preset_name: str | None = None
+    validation_passed: bool
+    validation_issue_count: int
+    runtime_smoke_status: Literal['ok', 'warning', 'error']
+    opened: bool
+    launch_mode: Literal['interactive', 'preflight_only'] = 'preflight_only'
+    failure_code: str | None = None
+    failure_message: str | None = None
+    failure_remediation: str | None = None
+    failure_help_url: str | None = None
+```
+
+The alpha implementation must emit `opened=false` and `launch_mode='preflight_only'` on every path. A future interactive launch can use the same contract only after RFC and test updates define window lifecycle, shutdown, and user-interrupt behavior.
+
 ## Doctor result contract
 ```python
 class DoctorCheck(BaseModel):
@@ -219,6 +241,7 @@ class DoctorResult(ResultEnvelope):
 ```python
 class ErrorResult(ResultEnvelope):
     issues: list[ValidationIssue]
+    help_url: str = 'docs/spec/ERROR-CODE-REGISTRY.md'
 ```
 
 ## Serialization rules
@@ -243,11 +266,13 @@ Every result must preserve enough provenance to answer:
 - warnings only -> exit code `0`
 - validation or contract errors -> non-zero exit code
 - runtime smoke exits non-zero only when MuJoCo is required and missing, or when MuJoCo fails to compile the XML
+- open exits non-zero when validation, preset, provenance, or required MuJoCo preflight checks fail
 - evidence and export exit non-zero when bundled validation did not pass or runtime smoke returned `error`
 
 ## Non-goals
 - multi-version backward compatibility at v0 beyond explicit schema checks
 - browser UI wire format design
 - video capture metadata contract in this phase
+- interactive viewer lifecycle in this phase
 - partial inspect contracts for malformed XML
 - simulation quality, controller quality, or hardware fidelity from runtime smoke

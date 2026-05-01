@@ -9,10 +9,10 @@ Asimov Sim Lab is a Python CLI and library that inspects and validates a local A
 ## Current State
 
 - Stage: alpha MVP.
-- Shipped commands: `doctor`, `inspect`, `validate`, `runtime-smoke`, `evidence`, `export`.
+- Shipped commands: `doctor`, `inspect`, `validate`, `runtime-smoke`, `open` preflight, `evidence`, `export`.
 - Source strategy: local checkout only. No automatic download and no vendored upstream assets.
 - Public contracts: Pydantic models in `src/asimov_sim_lab/models.py` and generated JSON Schemas in `docs/schemas/`.
-- Deferred: viewer/open, capture/screenshot/video, UI, controllers, policy training, hardware or manufacturing claims.
+- Deferred: interactive viewer launch, capture/screenshot/video, UI, controllers, policy training, hardware or manufacturing claims.
 
 ## Architecture Map
 
@@ -24,6 +24,7 @@ Asimov Sim Lab is a Python CLI and library that inspects and validates a local A
 - `src/asimov_sim_lab/validation.py`: validation issue generation.
 - `src/asimov_sim_lab/presets.py`: built-in neutral preset and local preset validation.
 - `src/asimov_sim_lab/runtime.py`: optional MuJoCo compiled-runtime smoke checks.
+- `src/asimov_sim_lab/viewer.py`: preflight-only viewer/open contract.
 - `src/asimov_sim_lab/evidence.py`: checksummed evidence bundle generation.
 - `src/asimov_sim_lab/export.py`: deterministic export package generation.
 - `src/asimov_sim_lab/artifacts.py`: atomic artifact writes and SHA-256 helpers.
@@ -77,6 +78,7 @@ uv run asimov-sim-lab doctor --asset-root /absolute/path/to/asimov-v1 --format j
 uv run asimov-sim-lab inspect --asset-root /absolute/path/to/asimov-v1 --json
 uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --format json
 uv run asimov-sim-lab runtime-smoke --asset-root /absolute/path/to/asimov-v1 --allow-missing-mujoco --format json
+uv run asimov-sim-lab open --asset-root /absolute/path/to/asimov-v1 --format json
 uv run asimov-sim-lab evidence --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --overwrite --format json
 uv run asimov-sim-lab export --asset-root /absolute/path/to/asimov-v1 --output-dir .asimov-sim-lab/export --overwrite --format json
 uv run python scripts/check_release_evidence.py --export-dir .asimov-sim-lab/export
@@ -86,6 +88,12 @@ Optional real-upstream smoke:
 
 ```bash
 ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
+```
+
+Release-candidate dry run:
+
+```bash
+ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
 ```
 
 ## Conventions
@@ -101,6 +109,7 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 - Evidence bundles are review artifacts; inspect `evidence-bundle.json` and local paths before publishing.
 - Export packages normalize evidence bundle paths and archive metadata by default; do not add local absolute output paths to archive contents.
 - `runtime-smoke` only proves optional MuJoCo model compilation, not simulation correctness, control quality, or hardware fidelity.
+- `open` is preflight-only. It validates source/preset/runtime readiness, emits `ViewerOpenResult`, and must keep `opened=false` until a separate interactive launch contract lands.
 - Keep docs aligned with shipped behavior. Do not describe deferred commands as implemented.
 
 ## Critical Constraints
@@ -108,8 +117,8 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 - Do not vendor upstream Asimov XML, meshes, or generated reports into this repo.
 - Do not add hidden sibling checkout discovery.
 - Do not make hardware fidelity, manufacturing, safety, control, or policy-performance claims.
-- Do not add viewer, capture, controller, or policy-training surfaces without a spec, tests, and schema-backed contract.
-- Treat `docs/rfcs/RFC-0008-viewer-open-contract.md` as the gate for any future `open` command work.
+- Do not add interactive viewer launch, capture, controller, or policy-training surfaces without a spec, tests, and schema-backed contract.
+- Treat `docs/rfcs/RFC-0008-viewer-open-contract.md` as the current gate for `open`; only the preflight slice is implemented.
 - Do not relax schema drift, mypy, coverage, or lint gates to make a change pass.
 - Do not commit `.env` or `.asimov-sim-lab/`.
 

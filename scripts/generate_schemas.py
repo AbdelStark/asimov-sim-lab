@@ -19,6 +19,7 @@ from asimov_sim_lab.models import (
     InspectResult,
     RuntimeSmokeResult,
     ValidationResult,
+    ViewerOpenResult,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +34,7 @@ SCHEMAS = {
     "inspect-result.schema.json": InspectResult,
     "runtime-smoke-result.schema.json": RuntimeSmokeResult,
     "validation-result.schema.json": ValidationResult,
+    "viewer-open-result.schema.json": ViewerOpenResult,
 }
 
 

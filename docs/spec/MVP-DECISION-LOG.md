@@ -74,14 +74,15 @@ This file records the locked MVP decisions that turn the RFC package into an exe
 
 ## CLI
 
-- Supported commands are `doctor`, `inspect`, and `validate`.
-- `open` and `capture` are omitted until they have real behavior, tests, and contracts.
+- Supported commands are `doctor`, `inspect`, `validate`, `runtime-smoke`, preflight-only `open`, `evidence`, and `export`.
+- Interactive viewer launch and `capture` are omitted until they have real behavior, tests, and contracts.
 - JSON artifacts are the source of truth; text and Markdown are renderings.
 - Markdown is supported for `inspect` only.
 - `doctor` and `validate` support `--format text|json`.
 - `inspect` supports `--json`, `--markdown`, and `--format text|json|markdown`; conflicting flags exit `2`.
 - `--output` and `--manifest-output` create parent directories and write atomically.
 - JSON mode emits structured domain failures when possible.
+- JSON-mode domain failures include a registry `help_url`.
 - CLI misuse and internal crashes remain stderr-first.
 
 ## Tests And Gates

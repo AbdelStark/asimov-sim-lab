@@ -1,0 +1,175 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "command": {
+      "const": "open",
+      "default": "open",
+      "title": "Command",
+      "type": "string"
+    },
+    "failure_code": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Failure Code"
+    },
+    "failure_help_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Failure Help Url"
+    },
+    "failure_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Failure Message"
+    },
+    "failure_remediation": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Failure Remediation"
+    },
+    "generated_at_utc": {
+      "title": "Generated At Utc",
+      "type": "string"
+    },
+    "launch_mode": {
+      "default": "preflight_only",
+      "enum": [
+        "interactive",
+        "preflight_only"
+      ],
+      "title": "Launch Mode",
+      "type": "string"
+    },
+    "opened": {
+      "title": "Opened",
+      "type": "boolean"
+    },
+    "preset_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Preset Name"
+    },
+    "runtime": {
+      "const": "mujoco",
+      "default": "mujoco",
+      "title": "Runtime",
+      "type": "string"
+    },
+    "runtime_smoke_status": {
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ],
+      "title": "Runtime Smoke Status",
+      "type": "string"
+    },
+    "runtime_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Runtime Version"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_manifest_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Manifest Path"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tool_version": {
+      "default": "0.1.0",
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "validation_issue_count": {
+      "title": "Validation Issue Count",
+      "type": "integer"
+    },
+    "validation_passed": {
+      "title": "Validation Passed",
+      "type": "boolean"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "xml_path": {
+      "title": "Xml Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "xml_path",
+    "validation_passed",
+    "validation_issue_count",
+    "runtime_smoke_status",
+    "opened"
+  ],
+  "title": "ViewerOpenResult",
+  "type": "object"
+}

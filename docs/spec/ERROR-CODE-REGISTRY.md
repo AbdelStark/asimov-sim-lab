@@ -4,6 +4,8 @@
 
 Every public diagnostic code emitted by the CLI or Python API is tracked here. Codes are part of the operator contract: tests, runbooks, release evidence, and future UI/report surfaces may branch on them.
 
+JSON-mode recoverable domain errors include `help_url: "docs/spec/ERROR-CODE-REGISTRY.md"` so automation and future UI layers can link diagnostics back to this registry.
+
 This registry is enforced by:
 
 ```bash
@@ -15,6 +17,7 @@ uv run python scripts/check_error_registry.py --check
 - **Error** means the command cannot complete the requested contract or validation failed.
 - **Warning** means the command completed but the evidence is lower quality, incomplete, or environment-dependent.
 - **Strict** warnings are promoted to errors when `--strict` or profile `strict_validation = true` applies.
+- Strict-warning codes currently include `MESHDIR_MISSING`, `PROFILE_UNKNOWN_FIELD`, `SIM_MODEL_README_NOT_FOUND`, `SOURCE_DIRTY`, `SOURCE_NOT_GIT`, `SOURCE_NOT_GIT_ROOT`, and `UPSTREAM_LICENSE_NOT_FOUND`.
 - Fallback warning codes exist only for defensive normalization when a warning string lacks a code prefix.
 
 ## Registry
@@ -67,6 +70,12 @@ uv run python scripts/check_error_registry.py --check
 | `SOURCE_WARNING` | Warning | `doctor.py` | `doctor` | Defensive fallback for provenance warnings without code prefixes. | Preserve code-prefixed warnings in provenance readers. |
 | `UNSUPPORTED_SOURCE_LAYOUT` | Error | `inspect.py`, `manifest.py` | inspect/manifest generation | Source layout does not match the MVP contract, including unsupported `compiler@meshdir`. | Keep MJCF assets under `sim-model/assets/meshes`. |
 | `UPSTREAM_LICENSE_NOT_FOUND` | Strict warning | `paths.py` | `doctor`, manifest generation | No recognized license file exists at the upstream checkout root. | Add or point at a checkout with a license file before public evidence release. |
+| `VIEWER_EXTRA_NOT_INSTALLED` | Error | `viewer.py` | `open` | Viewer preflight requires MuJoCo but the optional viewer runtime is not installed. | Run `uv sync --extra viewer` before using viewer preflight/open workflows. |
+| `VIEWER_LAUNCH_FAILED` | Error | `viewer.py` | `open` | Viewer preflight reached MuJoCo but runtime model loading failed. | Fix MJCF/runtime errors before opening the viewer. |
+| `VIEWER_LICENSE_MISSING` | Error | `viewer.py` | `open --require-license` | Viewer preflight requires an upstream root license but none was found. | Add a license file or rerun with `--allow-missing-license`. |
+| `VIEWER_PRESET_NOT_FOUND` | Error | `viewer.py` | `open --preset` | Requested viewer preset is not built in and was not found in the local preset directory. | Use `--preset neutral` or pass a preset directory containing the requested preset. |
+| `VIEWER_SOURCE_DIRTY` | Error | `viewer.py` | `open --require-clean-source` | Viewer preflight requires clean source provenance but the checkout is dirty. | Commit, stash, or rerun with `--allow-dirty-source`. |
+| `VIEWER_VALIDATION_FAILED` | Error | `viewer.py` | `open` | Source validation failed before the viewer could be opened. | Fix validation errors before opening the viewer. |
 | `WARNING` | Warning | `validation.py` | `validate` | Defensive fallback for warning strings without code prefixes. | Preserve code-prefixed warning messages in producers. |
 | `XML_BOOLEAN_PARSE_FAILED` | Error | `inspect.py` | `inspect`, `validate` | A boolean MJCF attribute is not one of `true`, `false`, `1`, or `0`. | Fix the MJCF boolean value. |
 | `XML_NUMERIC_PARSE_FAILED` | Error | `inspect.py` | `inspect`, `validate` | A numeric MJCF attribute cannot be parsed or has the wrong arity. | Fix numeric MJCF attributes. |

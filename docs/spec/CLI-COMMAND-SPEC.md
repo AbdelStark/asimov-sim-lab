@@ -11,6 +11,7 @@ asimov-sim-lab inspect --json
 asimov-sim-lab inspect --markdown
 asimov-sim-lab validate
 asimov-sim-lab runtime-smoke
+asimov-sim-lab open
 asimov-sim-lab evidence
 asimov-sim-lab export
 ```
@@ -31,6 +32,8 @@ asimov-sim-lab export
 --output-dir PATH         Artifact directory for `evidence` or `export`
 --format [text|json]      When supported by the command
 --strict / --no-strict    Escalate warnings into failures where applicable
+--preset NAME             Viewer or validation preset where supported
+--preset-dir PATH         Directory of local TOML presets where supported
 --overwrite / --no-overwrite
 ```
 
@@ -141,6 +144,28 @@ asimov-sim-lab runtime-smoke --asset-root /path/to/asimov-v1 --allow-missing-muj
 asimov-sim-lab runtime-smoke --asset-root /path/to/asimov-v1 --require-mujoco --format json
 ```
 
+## `open`
+Purpose:
+- run the viewer/open preflight contract before any interactive launch exists
+- verify source validation, requested preset availability, optional provenance gates, and MuJoCo compile readiness
+- expose viewer readiness as `ViewerOpenResult` instead of an ad hoc demo script
+
+Expected behavior:
+- never opens an interactive viewer in the alpha implementation
+- always emits `opened=false` and `launch_mode=preflight_only`
+- exits non-zero when validation has error-severity issues
+- exits non-zero with `VIEWER_EXTRA_NOT_INSTALLED` when MuJoCo is missing
+- exits non-zero with `VIEWER_LAUNCH_FAILED` when MuJoCo is installed but cannot compile the XML
+- exits non-zero with viewer-specific errors for missing presets, dirty source when required, or missing upstream license when required
+- `--format json` emits `ViewerOpenResult`
+- does not step simulation, capture media, evaluate controllers, or make hardware-fidelity claims
+
+Example:
+```bash
+asimov-sim-lab open --asset-root /path/to/asimov-v1 --format json
+asimov-sim-lab open --asset-root /path/to/asimov-v1 --preset neutral --require-clean-source --format json
+```
+
 ## `export`
 Purpose:
 - generate a portable evidence directory and deterministic `tar.gz` archive for review or CI retention
@@ -162,14 +187,13 @@ asimov-sim-lab export --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-l
 
 ## Deferred commands
 These are intentionally named now but not promised in this phase:
-- `open`
 - `capture`
 - `preset validate`
 - `preset list`
 
 The CLI should omit deferred commands until they have real behavior, tests, and contracts.
 
-`open` is gated by `docs/rfcs/RFC-0008-viewer-open-contract.md`. It must ship as schema-backed preflight before any interactive viewer launch is allowed.
+Interactive viewer launch remains deferred. `open` is currently limited to the schema-backed preflight slice defined by `docs/rfcs/RFC-0008-viewer-open-contract.md`.
 
 ## Exit codes
 - `0`: success, including warnings-only validation
@@ -184,5 +208,8 @@ The first implementation must cover:
 - `inspect --json` shape
 - `validate --format json` pass/fail semantics
 - one broken fixture path per major validation error family
+- viewer/open preflight success with a fake MuJoCo module
+- viewer/open missing MuJoCo, validation failure, unknown preset, and provenance-gate failures
+- generated `ViewerOpenResult` schema validation
 - conflicting format flags exit `2`
 - JSON-mode domain failures emit structured error results

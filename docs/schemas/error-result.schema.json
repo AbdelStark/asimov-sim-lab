@@ -75,6 +75,11 @@
       "title": "Generated At Utc",
       "type": "string"
     },
+    "help_url": {
+      "default": "docs/spec/ERROR-CODE-REGISTRY.md",
+      "title": "Help Url",
+      "type": "string"
+    },
     "issues": {
       "items": {
         "$ref": "#/$defs/ValidationIssue"

@@ -94,6 +94,6 @@ The interactive decision pass expanded the first implementation from work pack 1
 - work pack 1: asset discovery and doctor
 - work pack 2: MJCF inspection contract export
 - work pack 3: validation and presets
-- schema generation, CI gates, examples, contribution docs, and optional real-upstream smoke
+- schema generation, CI gates, examples, contribution docs, optional real-upstream smoke, and preflight-only viewer/open checks
 
-The expansion does not include deferred viewer, UI, capture, controller, or policy-training work.
+The expansion does not include interactive viewer launch, UI, capture, controller, or policy-training work.

@@ -14,9 +14,10 @@ The first operator surface should be a direct, scriptable CLI rather than a GUI-
 - `inspect`
 - `validate`
 - `runtime-smoke`
+- `open` preflight
 - `evidence`
 - `export`
 
-Deferred commands such as `open`, `capture`, or preset management require their own contracts, tests, and schemas before they appear in the CLI.
+Deferred commands such as `capture` or preset management require their own contracts, tests, and schemas before they appear in the CLI.
 
-`open` now has a draft contract in `RFC-0008-viewer-open-contract.md`; it remains deferred until its schema, failure codes, tests, and optional-runtime behavior are implemented.
+`open` is implemented only as the preflight slice defined by `RFC-0008-viewer-open-contract.md`. Interactive GUI launch remains deferred until lifecycle, shutdown, and failure semantics are specified and tested.

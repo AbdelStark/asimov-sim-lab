@@ -15,6 +15,29 @@ from asimov_sim_lab.manifest import generate_asset_manifest
 from asimov_sim_lab.paths import resolve_asset_root
 from asimov_sim_lab.runtime import run_runtime_smoke
 from asimov_sim_lab.validation import validate_model
+from asimov_sim_lab.viewer import run_viewer_open_preflight
+
+
+class _FakeModel:
+    nbody = 3
+    njnt = 2
+    nu = 1
+    nsensor = 2
+    ngeom = 2
+    nmesh = 2
+    nq = 9
+    nv = 8
+
+
+class _FakeMjModel:
+    @staticmethod
+    def from_xml_path(path: str) -> _FakeModel:
+        return _FakeModel()
+
+
+class _FakeMujoco:
+    __version__ = "test-runtime"
+    MjModel = _FakeMjModel
 
 
 def test_committed_json_schemas_are_current() -> None:
@@ -34,6 +57,9 @@ def test_outputs_validate_against_committed_schemas(
     inspect_result = json.loads(inspect_model(resolution).model_dump_json())
     validation_result = json.loads(validate_model(resolution).model_dump_json())
     runtime_result = json.loads(run_runtime_smoke(resolution).model_dump_json())
+    viewer_result = json.loads(
+        run_viewer_open_preflight(resolution, mujoco_module=_FakeMujoco()).model_dump_json()
+    )
     evidence_result = json.loads(
         generate_evidence_bundle(resolution, output_dir=tmp_path / "evidence").model_dump_json()
     )
@@ -63,6 +89,10 @@ def test_outputs_validate_against_committed_schemas(
     validate_json_schema(
         runtime_result,
         json.loads((schema_dir / "runtime-smoke-result.schema.json").read_text()),
+    )
+    validate_json_schema(
+        viewer_result,
+        json.loads((schema_dir / "viewer-open-result.schema.json").read_text()),
     )
     validate_json_schema(
         export_manifest,

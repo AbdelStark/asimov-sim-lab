@@ -24,10 +24,12 @@ from asimov_sim_lab.models import (
     Status,
     ValidationIssue,
     ValidationResult,
+    ViewerOpenResult,
 )
 from asimov_sim_lab.paths import resolve_asset_root
 from asimov_sim_lab.runtime import run_runtime_smoke
 from asimov_sim_lab.validation import validate_model
+from asimov_sim_lab.viewer import DEFAULT_VIEWER_PRESET, run_viewer_open_preflight
 
 app = typer.Typer(
     no_args_is_help=True, help="Inspect and validate a local Asimov v1 MuJoCo checkout."
@@ -277,6 +279,71 @@ def runtime_smoke(
         _handle_error(exc, command="runtime-smoke", output_format=output_format, output=output)
 
 
+@app.command("open")
+def open_command(
+    asset_root: Annotated[
+        Path | None, typer.Option("--asset-root", help="Upstream Asimov repo root.")
+    ] = None,
+    profile: Annotated[
+        Path | None, typer.Option("--profile", help="Optional local profile TOML.")
+    ] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", help="Write preflight result artifact.")
+    ] = None,
+    preset_name: Annotated[
+        str | None, typer.Option("--preset", help="Viewer preset name.")
+    ] = DEFAULT_VIEWER_PRESET,
+    preset_dir: Annotated[
+        Path | None, typer.Option("--preset-dir", help="Optional local preset directory.")
+    ] = None,
+    output_format: Annotated[
+        str, typer.Option("--format", help="Output format: text or json.")
+    ] = "text",
+    require_clean_source: Annotated[
+        bool,
+        typer.Option(
+            "--require-clean-source/--allow-dirty-source",
+            help="Fail preflight when the source checkout is dirty.",
+        ),
+    ] = False,
+    require_license: Annotated[
+        bool,
+        typer.Option(
+            "--require-license/--allow-missing-license",
+            help="Fail preflight when no upstream root license is found.",
+        ),
+    ] = False,
+    strict: Annotated[
+        bool, typer.Option("--strict/--no-strict", help="Escalate validation warnings.")
+    ] = False,
+) -> None:
+    """Run schema-backed viewer preflight without launching a GUI."""
+    if output_format not in {"text", "json"}:
+        _usage_error("open supports --format text|json")
+    try:
+        resolution = resolve_asset_root(asset_root=asset_root, profile_path=profile, strict=strict)
+        effective_strict = strict or bool(
+            resolution.profile and resolution.profile.strict_validation
+        )
+        result = run_viewer_open_preflight(
+            resolution,
+            preset_name=preset_name,
+            preset_dir=preset_dir,
+            strict=effective_strict,
+            require_clean_source=require_clean_source,
+            require_license=require_license,
+        )
+        payload = (
+            result.model_dump_json(indent=2) + "\n"
+            if output_format == "json"
+            else _viewer_open_text(result)
+        )
+        _emit(payload, output)
+        raise typer.Exit(0 if result.status != "error" else 1)
+    except LabError as exc:
+        _handle_error(exc, command="open", output_format=output_format, output=output)
+
+
 @app.command("export")
 def export_command(
     asset_root: Annotated[
@@ -504,6 +571,28 @@ def _export_text(result: ExportPackageResult) -> str:
         f"archive_sha256: {result.archive_sha256}",
         f"evidence_bundle_path: {result.evidence_bundle_path}",
     ]
+    for warning in result.warnings:
+        lines.append(f"warning: {warning}")
+    return "\n".join(lines) + "\n"
+
+
+def _viewer_open_text(result: ViewerOpenResult) -> str:
+    lines = [
+        f"status: {result.status}",
+        f"opened: {result.opened}",
+        f"launch_mode: {result.launch_mode}",
+        f"validation_passed: {result.validation_passed}",
+        f"validation_issue_count: {result.validation_issue_count}",
+        f"runtime_smoke_status: {result.runtime_smoke_status}",
+        f"xml_path: {result.xml_path}",
+        f"preset_name: {result.preset_name or ''}",
+    ]
+    if result.runtime_version is not None:
+        lines.append(f"runtime_version: {result.runtime_version}")
+    if result.failure_code is not None:
+        lines.append(f"failure: {result.failure_code}: {result.failure_message or ''}")
+    if result.failure_help_url is not None:
+        lines.append(f"help: {result.failure_help_url}")
     for warning in result.warnings:
         lines.append(f"warning: {warning}")
     return "\n".join(lines) + "\n"

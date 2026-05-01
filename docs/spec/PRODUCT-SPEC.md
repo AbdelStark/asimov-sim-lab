@@ -2,11 +2,11 @@
 
 ## One-line thesis
 
-Turn a local Asimov v1 MuJoCo checkout into a serious developer-facing inspection, validation, and evidence tool before any viewer, controller, policy, or demo surface is built.
+Turn a local Asimov v1 MuJoCo checkout into a serious developer-facing inspection, validation, evidence, and viewer-preflight tool before any interactive viewer, controller, policy, or demo surface is built.
 
 ## Product shape
 
-CLI-first Python package with a narrow public Python API, schema-backed JSON outputs, deterministic Markdown inspection reports, optional MuJoCo runtime smoke behind a `viewer` extra, deterministic evidence export packages, and optional future MuJoCo viewer support.
+CLI-first Python package with a narrow public Python API, schema-backed JSON outputs, deterministic Markdown inspection reports, optional MuJoCo runtime smoke behind a `viewer` extra, preflight-only viewer/open checks, deterministic evidence export packages, and optional future interactive MuJoCo viewer support.
 
 ## Users
 
@@ -22,6 +22,7 @@ CLI-first Python package with a narrow public Python API, schema-backed JSON out
 - export a concrete MJCF model contract
 - validate mesh, actuator, sensor, joint-range, and preset references
 - run a dependency-gated MuJoCo model-compile smoke check when the optional runtime is installed
+- run a preflight-only viewer/open check that validates source, preset, provenance gates, and MuJoCo compile readiness without opening a GUI
 - generate a checksummed evidence bundle and deterministic export package for review
 - publish committed JSON Schemas for result artifacts
 - prove happy and broken paths with tiny synthetic fixtures
@@ -30,7 +31,7 @@ CLI-first Python package with a narrow public Python API, schema-backed JSON out
 ## Non-goals
 
 - no controller, policy-training, RL, imitation-learning, or ML benchmark work
-- no `open`, `capture`, screenshot, video, local UI, or web report viewer
+- no interactive viewer launch, `capture`, screenshot, video, local UI, or web report viewer
 - no automatic upstream download or hidden sibling discovery
 - no vendored upstream XML or mesh assets
 - no claims about hardware fidelity, manufacturing readiness, electrical safety, or policy performance
@@ -57,6 +58,7 @@ asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --json
 asimov-sim-lab inspect --asset-root /path/to/asimov-v1 --markdown
 asimov-sim-lab validate --asset-root /path/to/asimov-v1 --format json
 asimov-sim-lab runtime-smoke --asset-root /path/to/asimov-v1 --allow-missing-mujoco --format json
+asimov-sim-lab open --asset-root /path/to/asimov-v1 --format json
 asimov-sim-lab evidence --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-lab/evidence --format json
 asimov-sim-lab export --asset-root /path/to/asimov-v1 --output-dir .asimov-sim-lab/export --format json
 ```
@@ -83,6 +85,7 @@ Committed schemas:
 - `docs/schemas/inspect-result.schema.json`
 - `docs/schemas/runtime-smoke-result.schema.json`
 - `docs/schemas/validation-result.schema.json`
+- `docs/schemas/viewer-open-result.schema.json`
 
 Every result includes schema version, tool version, generated timestamp, command, status, warnings, and enough provenance to identify the local source checkout.
 
@@ -127,6 +130,18 @@ Malformed XML, unsupported mesh directories, malformed numeric attributes, and m
 `runtime-smoke` imports MuJoCo only when it is installed and attempts to compile `sim-model/xmls/asimov.xml`. Missing MuJoCo is a warning by default and an error with `--require-mujoco`.
 
 The command records runtime availability, runtime version when available, loaded/skipped state, compiled model counts, elapsed time, and typed failure metadata. It does not open a viewer, step simulation, validate controller behavior, or make hardware-fidelity claims.
+
+## Viewer/Open Preflight Contract
+
+`open` is implemented as a schema-backed preflight only. It validates:
+
+- supported source layout and model validation
+- requested viewer preset, defaulting to built-in `neutral`
+- optional clean-source provenance via `--require-clean-source`
+- optional upstream license presence via `--require-license`
+- required MuJoCo availability and MJCF compilation
+
+The command emits `ViewerOpenResult`. In alpha, `opened` is always `false` and `launch_mode` is always `preflight_only`. Failure paths use `VIEWER_*` diagnostic codes linked through the public error-code registry. The command does not open a GUI, step simulation, capture media, validate controllers, or imply hardware fidelity.
 
 ## Presets
 
@@ -185,6 +200,7 @@ asimov-sim-lab/
 │   ├── paths.py
 │   ├── presets.py
 │   ├── runtime.py
+│   ├── viewer.py
 │   ├── artifacts.py
 │   ├── evidence.py
 │   └── validation.py
@@ -206,11 +222,11 @@ asimov-sim-lab/
 
 CI uses synthetic fixtures only, generates retained fixture evidence/export artifacts, verifies export-package integrity, and does not require MuJoCo. Real upstream smoke is optional and gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
 
-Release candidates follow `docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md` and must pass `scripts/check_release_evidence.py` for the candidate export directory.
+Release candidates follow `docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md`, must pass `scripts/check_release_evidence.py` for the candidate export directory, and should record the sanitized dry-run report generated by `make release-dry-run`.
 
 ## Deferred V1 Surface
 
-- local MuJoCo `open` command, gated by `docs/rfcs/RFC-0008-viewer-open-contract.md`
+- interactive MuJoCo viewer launch, gated by an update to `docs/rfcs/RFC-0008-viewer-open-contract.md`
 - capture/screenshot/video contracts
 - report viewer or UI
 - simulation stepping or richer physical summaries from compiled MuJoCo state

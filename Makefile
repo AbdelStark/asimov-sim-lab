@@ -1,4 +1,4 @@
-.PHONY: build check lint registry release-evidence-check schemas schemas-update security smoke-real test type
+.PHONY: build check lint registry release-dry-run release-evidence-check schemas schemas-update security smoke-real test type
 
 check: lint type schemas registry test build security
 
@@ -24,6 +24,9 @@ registry:
 release-evidence-check:
 	@test -n "$(ASIMOV_SIM_LAB_EXPORT_DIR)" || (echo "Set ASIMOV_SIM_LAB_EXPORT_DIR=/path/to/export-dir" && exit 2)
 	uv run python scripts/check_release_evidence.py --export-dir "$(ASIMOV_SIM_LAB_EXPORT_DIR)"
+
+release-dry-run: smoke-real
+	uv run python scripts/write_release_candidate_report.py --export-dir .asimov-sim-lab/smoke-real-export --output docs/spec/RELEASE-CANDIDATE-DRY-RUN.md
 
 build:
 	uv build

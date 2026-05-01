@@ -37,6 +37,7 @@ def test_doctor_missing_asset_root_json_error() -> None:
     assert result.exit_code == 3
     payload = json.loads(result.stdout)
     assert payload["issues"][0]["code"] == "ASSET_ROOT_NOT_FOUND"
+    assert payload["help_url"] == "docs/spec/ERROR-CODE-REGISTRY.md"
 
 
 def test_doctor_output_directory_error_text(minimal_source: Path, tmp_path: Path) -> None:

@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "src" / "asimov_sim_lab"
 REGISTRY_PATH = ROOT / "docs" / "spec" / "ERROR-CODE-REGISTRY.md"
 
-CODE_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
+CODE_RE = re.compile(r"^[A-Z][A-Z0-9_]*[A-Z0-9]$")
 PREFIX_RE = re.compile(r"\b([A-Z][A-Z0-9]*_[A-Z0-9_]+):")
 REGISTRY_ROW_RE = re.compile(r"^\|\s*`([A-Z][A-Z0-9_]+)`\s*\|")
 
@@ -61,15 +61,22 @@ class _DiagnosticCodeVisitor(ast.NodeVisitor):
             self.codes.update(_codes_in_expr(node.args[0]))
         if name == "_path_check" and len(node.args) >= 3:
             self.codes.update(_codes_in_expr(node.args[2]))
-        if name in {"DoctorCheck", "RuntimeSmokeResult", "ValidationIssue"}:
+        if name == "_viewer_issue" and node.args:
+            self.codes.update(_codes_in_expr(node.args[0]))
+        if name in {"DoctorCheck", "RuntimeSmokeResult", "ValidationIssue", "ViewerOpenResult"}:
             for keyword in node.keywords:
                 if keyword.arg in {"code", "failure_code"}:
                     self.codes.update(_codes_in_expr(keyword.value))
+        for keyword in node.keywords:
+            if keyword.arg == "failure_code":
+                self.codes.update(_codes_in_expr(keyword.value))
         self.generic_visit(node)
 
     def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
         target_names = {target.id for target in node.targets if isinstance(target, ast.Name)}
         if "STRICT_WARNING_CODES" in target_names:
+            self.codes.update(_codes_in_expr(node.value))
+        if "failure_code" in target_names:
             self.codes.update(_codes_in_expr(node.value))
         self.generic_visit(node)
 

@@ -4,11 +4,11 @@ Asimov Sim Lab is a Python CLI and library that inspects and validates a local A
 
 ## Status
 
-As of May 1, 2026, this project is an alpha MVP. It is suitable for local source inspection, contract export, validation, optional MuJoCo runtime smoke checks, deterministic evidence packaging, and CI-backed development against synthetic fixtures. It is not yet suitable for production robotics operation, hardware claims, controller evaluation, policy training, video capture, or public release automation. Known limitations: local-checkout-only source assets, no MuJoCo viewer command, no screenshot/capture flow, no UI, no automatic upstream download, and runtime smoke checks only verify that MuJoCo can compile the MJCF. Breaking changes before `1.0` are possible.
+As of May 1, 2026, this project is an alpha MVP. It is suitable for local source inspection, contract export, validation, optional MuJoCo runtime smoke checks, preflight-only viewer/open checks, deterministic evidence packaging, and CI-backed development against synthetic fixtures. It is not yet suitable for production robotics operation, hardware claims, controller evaluation, policy training, video capture, interactive viewer launch, or public release automation. Known limitations: local-checkout-only source assets, no interactive MuJoCo viewer launch, no screenshot/capture flow, no UI, no automatic upstream download, and runtime smoke checks only verify that MuJoCo can compile the MJCF. Breaking changes before `1.0` are possible.
 
 ## Why It Exists
 
-The upstream Asimov v1 release contains useful MuJoCo assets, but raw XML and mesh files are hard to audit, diff, validate, and reuse safely. This repo turns that local source checkout into explicit contracts: asset manifests, model inspection JSON, validation results, optional runtime-smoke results, Markdown reports, checksummed evidence bundles, deterministic export archives, and JSON Schemas that future UI/report layers can trust.
+The upstream Asimov v1 release contains useful MuJoCo assets, but raw XML and mesh files are hard to audit, diff, validate, and reuse safely. This repo turns that local source checkout into explicit contracts: asset manifests, model inspection JSON, validation results, optional runtime-smoke results, preflight-only viewer/open results, Markdown reports, checksummed evidence bundles, deterministic export archives, and JSON Schemas that future UI/report layers can trust.
 
 ## Who It Is For
 
@@ -89,6 +89,15 @@ uv run asimov-sim-lab runtime-smoke --asset-root /absolute/path/to/asimov-v1 --r
 
 Without the `viewer` extra, `runtime-smoke` exits `0` by default with a warning and `skipped: true`. Use `--require-mujoco` when the runtime is expected to be installed.
 
+Run the viewer/open preflight contract:
+
+```bash
+uv sync --extra viewer
+uv run asimov-sim-lab open --asset-root /absolute/path/to/asimov-v1 --format json
+```
+
+`open` is preflight-only in this alpha. It validates the source checkout, requested preset, and MuJoCo compile path, then emits `ViewerOpenResult` with `opened=false` and `launch_mode=preflight_only`. It never opens an interactive window, steps simulation, captures media, or evaluates controllers.
+
 Generate a complete evidence bundle:
 
 ```bash
@@ -119,6 +128,12 @@ Verify an export package before attaching it to a release candidate:
 uv run python scripts/check_release_evidence.py --export-dir .asimov-sim-lab/export
 ```
 
+Generate a sanitized release-candidate dry-run report from a real-upstream export:
+
+```bash
+ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
+```
+
 Exit codes:
 
 - `0`: command succeeded, including warnings-only validation
@@ -139,8 +154,9 @@ JSON artifacts are the source of truth. Text and Markdown are renderings.
 - `docs/schemas/inspect-result.schema.json`
 - `docs/schemas/runtime-smoke-result.schema.json`
 - `docs/schemas/validation-result.schema.json`
+- `docs/schemas/viewer-open-result.schema.json`
 
-The inspect contract currently exports model name, bodies, joints, actuators, sensors, mesh assets, concrete geoms, cameras, sites, declared XML mass totals, passive-joint inference, and typed warnings. The validator checks supported source layout, mesh files, geom mesh references, actuator targets, sensor targets, joint ranges, and built-in or local TOML presets. Runtime smoke checks verify optional MuJoCo import and model compilation only; they do not simulate, control, or score robot behavior.
+The inspect contract currently exports model name, bodies, joints, actuators, sensors, mesh assets, concrete geoms, cameras, sites, declared XML mass totals, passive-joint inference, and typed warnings. The validator checks supported source layout, mesh files, geom mesh references, actuator targets, sensor targets, joint ranges, and built-in or local TOML presets. Runtime smoke checks verify optional MuJoCo import and model compilation only; they do not simulate, control, or score robot behavior. `open` adds viewer-specific preflight gating and result shape without launching an interactive viewer.
 
 ## Architecture
 
@@ -152,6 +168,7 @@ Core modules live in `src/asimov_sim_lab/`:
 - `validation.py`: reference, range, sensor, actuator, and preset validation
 - `presets.py`: built-in neutral preset and local TOML preset validation
 - `runtime.py`: optional MuJoCo compiled-runtime smoke validation
+- `viewer.py`: preflight-only viewer/open contract
 - `evidence.py`: checksummed evidence bundle generation
 - `export.py`: deterministic export archive generation
 - `models.py`: Pydantic public contracts and schema versions
@@ -185,17 +202,23 @@ Optional real-upstream smoke:
 ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
 ```
 
+Release-candidate dry run:
+
+```bash
+ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
+```
+
 ## Contribute
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/spec/PRODUCT-SPEC.md](docs/spec/PRODUCT-SPEC.md), and [AGENTS.md](AGENTS.md). Keep changes contract-first: update code, tests, generated schemas, and docs together. Diagnostic-code changes must update [docs/spec/ERROR-CODE-REGISTRY.md](docs/spec/ERROR-CODE-REGISTRY.md). Release candidates must follow [docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md](docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md). Do not add viewer, capture, controller, policy, or UI surfaces without a contract and tests.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/spec/PRODUCT-SPEC.md](docs/spec/PRODUCT-SPEC.md), and [AGENTS.md](AGENTS.md). Keep changes contract-first: update code, tests, generated schemas, and docs together. Diagnostic-code changes must update [docs/spec/ERROR-CODE-REGISTRY.md](docs/spec/ERROR-CODE-REGISTRY.md). JSON-mode domain errors include a `help_url` back to that registry. Release candidates must follow [docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md](docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md). Do not add interactive viewer launch, capture, controller, policy, or UI surfaces without a contract and tests.
 
 ## Roadmap
 
 Next three milestones:
 
-- **M1: Viewer/open implementation preflight.** Exit criteria: `RFC-0008` is implemented as schema-backed preflight, still behind the `viewer` extra, with no capture/controller claims.
-- **M2: Release-candidate dry run.** Exit criteria: one real-upstream export package is verified, warnings are documented, and release notes include the archive SHA-256.
-- **M3: Error-code ergonomics.** Exit criteria: CLI JSON errors link to registry docs, and docs explain which warning codes `--strict` promotes.
+- **M1: Publication-safe evidence review.** Exit criteria: a redaction/review guide covers absolute paths, upstream license disclosure, dirty-source warnings, and release attachments.
+- **M2: Schema compatibility policy.** Exit criteria: public schemas declare compatibility expectations for alpha changes, and tests catch accidental version drift.
+- **M3: Interactive viewer design gate.** Exit criteria: preflight telemetry from `open` is reviewed, and any GUI launch proposal includes shutdown/error behavior before implementation.
 
 ## Help
 

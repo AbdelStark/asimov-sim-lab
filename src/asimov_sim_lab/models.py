@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from asimov_sim_lab import __version__
 
 SCHEMA_VERSION = "0.1.0"
+ERROR_REGISTRY_HELP_URL = "docs/spec/ERROR-CODE-REGISTRY.md"
 
 Status = Literal["ok", "warning", "error"]
 Severity = Literal["error", "warning"]
@@ -162,6 +163,23 @@ class ExportPackageResult(ResultEnvelope):
     runtime_smoke_skipped: bool
 
 
+class ViewerOpenResult(ResultEnvelope):
+    command: Literal["open"] = "open"
+    runtime: Literal["mujoco"] = "mujoco"
+    runtime_version: str | None = None
+    xml_path: str
+    preset_name: str | None = None
+    validation_passed: bool
+    validation_issue_count: int
+    runtime_smoke_status: Status
+    opened: bool
+    launch_mode: Literal["interactive", "preflight_only"] = "preflight_only"
+    failure_code: str | None = None
+    failure_message: str | None = None
+    failure_remediation: str | None = None
+    failure_help_url: str | None = None
+
+
 class MeshAssetContract(StrictBaseModel):
     name: str
     file: str
@@ -259,3 +277,4 @@ class ValidationResult(ResultEnvelope):
 
 class ErrorResult(ResultEnvelope):
     issues: list[ValidationIssue]
+    help_url: str = ERROR_REGISTRY_HELP_URL

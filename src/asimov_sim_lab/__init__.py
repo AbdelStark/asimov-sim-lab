@@ -14,10 +14,12 @@ from asimov_sim_lab.models import (
     InspectResult,
     RuntimeSmokeResult,
     ValidationResult,
+    ViewerOpenResult,
 )
 from asimov_sim_lab.paths import resolve_asset_root
 from asimov_sim_lab.runtime import run_runtime_smoke
 from asimov_sim_lab.validation import validate_model
+from asimov_sim_lab.viewer import run_viewer_open_preflight
 
 __all__ = [
     "AssetManifest",
@@ -27,6 +29,7 @@ __all__ = [
     "InspectResult",
     "RuntimeSmokeResult",
     "ValidationResult",
+    "ViewerOpenResult",
     "__version__",
     "generate_asset_manifest",
     "generate_evidence_bundle",
@@ -34,5 +37,6 @@ __all__ = [
     "inspect_model",
     "resolve_asset_root",
     "run_runtime_smoke",
+    "run_viewer_open_preflight",
     "validate_model",
 ]
