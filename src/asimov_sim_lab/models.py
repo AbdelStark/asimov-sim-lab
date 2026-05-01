@@ -90,6 +90,13 @@ class MeshAssetContract(StrictBaseModel):
     file: str
 
 
+class GeomContract(StrictBaseModel):
+    name: str
+    body: str
+    geom_type: str | None = None
+    mesh: str | None = None
+
+
 class JointContract(StrictBaseModel):
     name: str
     body: str
@@ -142,11 +149,13 @@ class InspectResult(ResultEnvelope):
     actuator_count: int
     sensor_count: int
     mesh_count: int
+    geom_count: int
     camera_count: int
     site_count: int
     total_declared_mass_kg: float | None = None
     bodies: list[str]
     meshes: list[MeshAssetContract]
+    geoms: list[GeomContract]
     joints: list[JointContract]
     actuators: list[ActuatorContract]
     sensors: list[SensorContract]

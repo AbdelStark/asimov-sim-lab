@@ -21,7 +21,11 @@ def test_inspect_json_exports_concrete_contract(minimal_source: Path) -> None:
     assert payload["sensor_count"] == 2
     assert payload["camera_count"] == 1
     assert payload["site_count"] == 1
+    assert payload["geom_count"] == 3
     assert payload["total_declared_mass_kg"] == 5.0
+
+    geoms = {geom["name"]: geom for geom in payload["geoms"]}
+    assert geoms["left_hip_pitch_visual"]["mesh"] == "left_hip_pitch_link.STL"
 
     joints = {joint["name"]: joint for joint in payload["joints"]}
     assert joints["floating_base"]["joint_type"] == "free"

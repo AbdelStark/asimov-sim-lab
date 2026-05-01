@@ -1,51 +1,46 @@
 # IMPLEMENTATION-PLAN — Asimov Sim Lab
 
 ## Implementation posture
-Contract-first. Keep the first runnable slice narrow, deterministic where possible, and deeply tied to the real upstream source assets.
 
-## Current sequencing
-Phase 1 established the repo, scaffold, and RFC package.
+Contract-first. The MVP core is now implemented, so future work should harden contracts, evidence, and operator workflows before adding product surface.
 
-Phase 2 locked the pre-coding contracts that would otherwise drift:
-1. manifest contract
-2. result schema contract
-3. CLI command spec
-4. profile contract
-5. first three implementation work packs
+## Completed MVP work packages
 
-Phase 3 should now execute against those contracts rather than redesigning them mid-flight.
+1. Asset-root resolution and manifest generation.
+2. MJCF inspection export.
+3. Validation engine and preset checks.
+4. Generated and committed JSON Schemas from the Pydantic contracts.
+5. CI, Makefile, pre-commit, coverage, schema drift, build, and dependency audit gates.
+6. Optional real-upstream smoke gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
 
-## Work packages
-1. Implement asset-root resolution and manifest generation.
-2. Implement MJCF inspection export.
-3. Implement validation engine and preset checks.
-4. Generate and commit JSON Schemas from the Pydantic contracts.
-5. Add CI, Makefile, pre-commit, coverage, schema drift, build, and lightweight security gates.
-6. Add optional real-upstream smoke gated by `ASIMOV_SIM_LAB_ASSET_ROOT`.
-7. Only then consider viewer/open/capture or richer UI/product polish.
+## Current module ownership
+
+- `config.py`: local profile loading and profile warnings.
+- `paths.py`: source-root resolution, supported-layout checks, Git metadata.
+- `manifest.py`: asset manifest checksums and mesh reference provenance.
+- `models.py`: public contracts and schema version.
+- `inspect.py`: XML parsing and model contract extraction.
+- `validation.py`: validation issue generation.
+- `presets.py`: built-in neutral preset and local preset validation.
+- `doctor.py`: layout/provenance/manifest health checks.
+- `cli.py`: command surface, output formats, atomic writes.
+- `scripts/generate_schemas.py`: schema generation.
 
 ## Must-have repo invariants
+
 - all generated outputs carry source provenance
 - validation failures are actionable and typed
 - tests cover broken fixtures as well as happy paths
 - README never outruns shipped reality
 - JSON contracts remain the source of truth for future UI layers
+- schema changes are committed only with the code and tests that justify them
 
-## Likely first files to implement
-- `src/asimov_sim_lab/config.py`
-- `src/asimov_sim_lab/paths.py`
-- `src/asimov_sim_lab/manifest.py`
-- `src/asimov_sim_lab/models.py`
-- `src/asimov_sim_lab/inspect.py`
-- `src/asimov_sim_lab/validation.py`
-- `src/asimov_sim_lab/presets.py`
-- `src/asimov_sim_lab/doctor.py`
-- `scripts/generate_schemas.py`
-- `tests/test_doctor.py`
-- `tests/test_inspect.py`
-- `tests/test_validation.py`
-- `tests/test_schemas.py`
-- feature-specific fixtures under `tests/fixtures/`
+## Next implementation sequence
+
+1. Complete alpha contract hardening: public field docs, error-code registry, and stricter schema-version checks.
+2. Add evidence-bundle generation: manifest, inspect result, validation result, Markdown report, and checksums in one reproducible local directory.
+3. Add a real-upstream smoke report format that remains optional but reviewable.
+4. Design the viewer/open contract as an RFC before adding MuJoCo runtime dependencies to default workflows.
 
 ## Implementation decisions
 

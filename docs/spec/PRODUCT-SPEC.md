@@ -84,9 +84,10 @@ Every result includes schema version, tool version, generated timestamp, command
 MVP fields include:
 
 - model name
-- body, joint, actuator, sensor, mesh, camera, and site counts
+- body, joint, actuator, sensor, mesh, concrete geom, camera, and site counts
 - concrete body names
 - mesh asset names and files
+- concrete geom names, owning bodies, geom types, and mesh references
 - joint names, bodies, types, axes, ranges, refs, limited flags, and passive flags
 - generic actuator type, name, joint target, and control range
 - minimal sensor target metadata
@@ -103,12 +104,14 @@ MVP fields include:
 - mesh files referenced by MJCF asset declarations
 - geom mesh references to declared mesh assets
 - actuator joint references
-- sensor site/body/object references
+- sensor site/body/object references, including concrete geom targets
 - limited or preset-targetable hinge/slide ranges
 - built-in neutral preset
 - optional local TOML presets via `--preset-dir`
 
 Warnings do not fail by default. `--strict` escalates defined evidence-quality warnings such as dirty/unpinned provenance or missing optional upstream evidence.
+
+Malformed XML, unsupported mesh directories, malformed numeric attributes, and malformed boolean attributes fail before partial inspect contracts are emitted.
 
 ## Presets
 
@@ -153,8 +156,7 @@ asimov-sim-lab/
 - `uv run ruff check .`
 - `uv run mypy`
 - `uv run pytest`
-- `uv run python scripts/generate_schemas.py`
-- `git diff --exit-code -- docs/schemas`
+- `uv run python scripts/generate_schemas.py --check`
 - `uv build`
 - `uv run pip-audit --skip-editable`
 

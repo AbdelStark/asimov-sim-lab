@@ -82,8 +82,10 @@ Purpose:
 Validation scope for the first cut:
 - primary XML exists
 - mesh references resolve
+- geom mesh references resolve
 - actuator joint references resolve
 - sensor references resolve when applicable
+- malformed numeric/boolean MJCF attributes fail contract extraction
 - preset pose files, when present, only reference known joints and legal ranges
 
 Expected behavior:
@@ -108,7 +110,7 @@ The CLI should omit deferred commands until they have real behavior, tests, and 
 
 ## Exit codes
 - `0`: success, including warnings-only validation
-- `1`: validation failed
+- `1`: validation failed or XML contract extraction failed
 - `2`: command misuse / invalid CLI arguments
 - `3`: unsupported upstream layout or missing required source assets
 - `4`: internal unhandled tool failure

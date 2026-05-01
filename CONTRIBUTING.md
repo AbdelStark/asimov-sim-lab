@@ -4,6 +4,8 @@ Asimov Sim Lab is contract-first. Do not add product surface that outruns the ex
 
 ## Setup
 
+Read `AGENTS.md`, `docs/ARCHITECTURE.md`, and `docs/spec/PRODUCT-SPEC.md` before changing behavior.
+
 ```bash
 uv sync --extra dev
 ```
@@ -44,10 +46,18 @@ The authoritative gates are:
 Pydantic models are the implementation source. Committed JSON Schemas are generated artifacts:
 
 ```bash
+make schemas-update
 make schemas
 ```
 
 If a public JSON field changes, update docs and schema files in the same change.
+
+## Documentation Rules
+
+- Update `CHANGELOG.md` for user-visible changes.
+- Update `README.md` when commands, status, limitations, or setup change.
+- Update `docs/ARCHITECTURE.md` when module boundaries, data flow, or invariants change.
+- Keep deferred commands out of command help, quickstarts, and examples until they are implemented.
 
 ## Claim Rules
 

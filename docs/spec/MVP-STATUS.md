@@ -1,41 +1,50 @@
 # MVP-STATUS — Asimov Sim Lab
 
 ## Current state
-- phase: phase 3 runnable core implementation
-- repo: created
-- remote: configured
-- local clone: present
-- uv scaffold: present
-- contracts: locked for the first implementation pass
-- implementation: core MVP in progress
 
-## What is already real
-- private GitHub repo exists
-- README and spec package exist
-- RFC backlog exists
-- package/test scaffold exists
-- deeper contracts now exist for manifest, result schemas, CLI semantics, profile handling, and first work packs
-- core modules now map those contracts to executable Python surfaces
-- synthetic source-root fixtures cover happy and broken paths
-- JSON Schema generation is part of the local/CI contract
+- date: May 1, 2026
+- phase: alpha MVP core implemented
+- repo: created and pushed
+- remote: configured
+- package scaffold: present
+- contracts: implemented as Pydantic models and generated JSON Schemas
+- implementation: `doctor`, `inspect`, and `validate` are runnable
+- validation posture: synthetic fixtures in CI, optional real-upstream smoke by environment variable
+
+## What is real
+
+- local asset-root resolution by `--asset-root`, profile, or `ASIMOV_SIM_LAB_ASSET_ROOT`
+- supported-layout checks for `sim-model/xmls/asimov.xml` and `sim-model/assets/meshes`
+- checksummed asset manifest generation
+- MJCF inspect contract export for bodies, joints, actuators, sensors, mesh assets, concrete geoms, cameras, sites, passive joints, and declared XML mass totals
+- validation for mesh files, geom mesh references, actuator targets, sensor targets, joint ranges, built-in neutral preset, and local TOML presets
+- JSON-mode structured errors for recoverable domain failures
+- generated JSON Schemas in `docs/schemas/`
+- `make check` gate covering lockfile, format, lint, mypy, pytest, schema drift, build, and dependency audit
+- `AGENTS.md`, `CHANGELOG.md`, `LICENSE`, `.env.example`, and architecture/runbook documentation
 
 ## What is intentionally not real yet
-- no real upstream sync implementation
-- no polished demo UI
-- no public release posture
+
+- no automatic upstream sync or download
+- no vendored upstream XML or meshes
+- no polished demo UI or report viewer
 - no MuJoCo viewer/open command
-- no screenshot/capture command
+- no screenshot, video, or capture command
 - no controller or policy-training path
+- no hardware-fidelity, manufacturing, electrical-safety, or policy-performance claims
 
-## Exit criteria for implementation start
-- all critical contracts reviewed
-- source asset strategy pinned
-- first fixture pack selected
-- first smoke workflow defined
+## Current limitations
 
-## Next implementation target
-Finish the MVP core:
-- validate schema generation and drift checks
-- run full local quality gates
-- run optional real-upstream smoke when `ASIMOV_SIM_LAB_ASSET_ROOT` is available
-- keep README and docs aligned with shipped behavior
+- The MVP supports one source layout only.
+- JSON artifacts may contain absolute local paths and should be reviewed before publication.
+- Real-upstream smoke is optional because CI cannot assume access to a local Asimov checkout.
+- Validation is XML-contract validation, not compiled MuJoCo physics validation.
+
+## Next target
+
+Alpha contract hardening:
+
+- document all public contract fields and warning/error codes
+- add a reproducible evidence-bundle command or script
+- keep optional real-upstream smoke output as a reviewable artifact
+- define the viewer contract before adding any MuJoCo runtime surface

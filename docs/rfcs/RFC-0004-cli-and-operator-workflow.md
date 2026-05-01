@@ -13,4 +13,5 @@ The first operator surface should be a direct, scriptable CLI rather than a GUI-
 - `doctor`
 - `inspect`
 - `validate`
-- one feature-specific export or demo command
+
+Deferred commands such as `open`, `capture`, or evidence-bundle export require their own contracts, tests, and schemas before they appear in the CLI.

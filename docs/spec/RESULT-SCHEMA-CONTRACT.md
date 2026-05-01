@@ -28,7 +28,6 @@ class ResultEnvelope(BaseModel):
     status: Literal['ok', 'warning', 'error']
     warnings: list[str] = Field(default_factory=list)
 ```
-```
 
 ## Inspect result contract
 ```python
@@ -53,6 +52,12 @@ class ActuatorContract(BaseModel):
 class MeshAssetContract(BaseModel):
     name: str
     file: str
+
+class GeomContract(BaseModel):
+    name: str
+    body: str
+    geom_type: str | None = None
+    mesh: str | None = None
 
 class SensorContract(BaseModel):
     name: str
@@ -83,11 +88,13 @@ class InspectResult(ResultEnvelope):
     actuator_count: int
     sensor_count: int
     mesh_count: int
+    geom_count: int
     camera_count: int
     site_count: int
     total_declared_mass_kg: float | None = None
     bodies: list[str]
     meshes: list[MeshAssetContract]
+    geoms: list[GeomContract]
     joints: list[JointContract]
     actuators: list[ActuatorContract]
     sensors: list[SensorContract]

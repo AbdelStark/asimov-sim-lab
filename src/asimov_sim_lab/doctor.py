@@ -39,13 +39,27 @@ def run_doctor(
             )
         )
 
+    manifest = None
+    if not any(check.status == "error" for check in checks):
+        manifest = generate_asset_manifest(resolution)
+        existing_codes = {check.code for check in checks if check.code is not None}
+        for warning in manifest.warnings:
+            code = warning.split(":", maxsplit=1)[0] if ":" in warning else "MANIFEST_WARNING"
+            if code in existing_codes:
+                continue
+            checks.append(
+                DoctorCheck(
+                    name="manifest",
+                    status="warning",
+                    detail=warning,
+                    code=code,
+                )
+            )
+
     normalized_checks = [
         check.model_copy(update={"status": strict_status(check.status, check.code, strict=strict)})
         for check in checks
     ]
-    manifest = None
-    if not any(check.status == "error" for check in normalized_checks):
-        manifest = generate_asset_manifest(resolution)
 
     status: Status = "ok"
     if any(check.status == "error" for check in normalized_checks):

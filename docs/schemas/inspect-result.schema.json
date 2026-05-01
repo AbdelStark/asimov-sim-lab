@@ -151,6 +151,49 @@
       "title": "CameraContract",
       "type": "object"
     },
+    "GeomContract": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "title": "Body",
+          "type": "string"
+        },
+        "geom_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geom Type"
+        },
+        "mesh": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mesh"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "body"
+      ],
+      "title": "GeomContract",
+      "type": "object"
+    },
     "JointContract": {
       "additionalProperties": false,
       "properties": {
@@ -429,6 +472,17 @@
       "title": "Generated At Utc",
       "type": "string"
     },
+    "geom_count": {
+      "title": "Geom Count",
+      "type": "integer"
+    },
+    "geoms": {
+      "items": {
+        "$ref": "#/$defs/GeomContract"
+      },
+      "title": "Geoms",
+      "type": "array"
+    },
     "joint_count": {
       "title": "Joint Count",
       "type": "integer"
@@ -536,10 +590,12 @@
     "actuator_count",
     "sensor_count",
     "mesh_count",
+    "geom_count",
     "camera_count",
     "site_count",
     "bodies",
     "meshes",
+    "geoms",
     "joints",
     "actuators",
     "sensors",

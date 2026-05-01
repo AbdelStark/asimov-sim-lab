@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import tomllib
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
@@ -110,7 +110,7 @@ def load_profile(
     return profile, locator
 
 
-def _profile_unknown_field_warnings(raw: dict[str, Any]) -> list[str]:
+def _profile_unknown_field_warnings(raw: Mapping[str, object]) -> list[str]:
     warnings: list[str] = []
     for key in sorted(set(raw) - ALLOWED_TOP_LEVEL_KEYS):
         warnings.append(f"PROFILE_UNKNOWN_FIELD: unknown top-level profile key {key!r}")

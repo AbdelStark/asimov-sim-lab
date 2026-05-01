@@ -14,14 +14,10 @@ from asimov_sim_lab.validation import validate_model
 
 
 def test_committed_json_schemas_are_current() -> None:
-    subprocess.run([sys.executable, "scripts/generate_schemas.py"], check=True)
-    diff = subprocess.run(
-        ["git", "diff", "--exit-code", "--", "docs/schemas"],
-        check=False,
-        capture_output=True,
-        text=True,
+    subprocess.run(
+        [sys.executable, "scripts/generate_schemas.py", "--check"],
+        check=True,
     )
-    assert diff.returncode == 0, diff.stdout + diff.stderr
 
 
 def test_outputs_validate_against_committed_schemas(minimal_source: Path) -> None:

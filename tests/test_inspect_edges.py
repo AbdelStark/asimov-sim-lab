@@ -37,7 +37,7 @@ def test_inspect_missing_meshdir_warns(tmp_path: Path) -> None:
     assert any(warning.startswith("MESHDIR_MISSING") for warning in result.warnings)
 
 
-def test_inspect_unsupported_meshdir_warns(tmp_path: Path) -> None:
+def test_inspect_unsupported_meshdir_fails(tmp_path: Path) -> None:
     source = _write_source(
         tmp_path,
         """
@@ -50,9 +50,10 @@ def test_inspect_unsupported_meshdir_warns(tmp_path: Path) -> None:
     )
     resolution = resolve_asset_root(asset_root=source, profile_path=None, env={})
 
-    result = inspect_model(resolution)
+    with pytest.raises(LabError) as exc:
+        inspect_model(resolution)
 
-    assert any(warning.startswith("UNSUPPORTED_SOURCE_LAYOUT") for warning in result.warnings)
+    assert exc.value.code == "UNSUPPORTED_SOURCE_LAYOUT"
 
 
 def test_inspect_invalid_numeric_fails(tmp_path: Path) -> None:
@@ -75,6 +76,52 @@ def test_inspect_invalid_numeric_fails(tmp_path: Path) -> None:
         inspect_model(resolution)
 
     assert exc.value.code == "XML_NUMERIC_PARSE_FAILED"
+
+
+def test_inspect_invalid_vector_attribute_fails(tmp_path: Path) -> None:
+    source = _write_source(
+        tmp_path,
+        """
+        <mujoco model="BadVector">
+          <compiler meshdir="../assets/meshes"/>
+          <worldbody>
+            <body name="pelvis_link">
+              <joint name="bad_axis" type="hinge" axis="0 1"/>
+            </body>
+          </worldbody>
+        </mujoco>
+        """,
+    )
+    resolution = resolve_asset_root(asset_root=source, profile_path=None, env={})
+
+    with pytest.raises(LabError) as exc:
+        inspect_model(resolution)
+
+    assert exc.value.code == "XML_NUMERIC_PARSE_FAILED"
+    assert "joint@axis" in exc.value.message
+
+
+def test_inspect_invalid_bool_attribute_fails(tmp_path: Path) -> None:
+    source = _write_source(
+        tmp_path,
+        """
+        <mujoco model="BadBool">
+          <compiler meshdir="../assets/meshes"/>
+          <worldbody>
+            <body name="pelvis_link">
+              <joint name="bad_limited" type="hinge" limited="sometimes"/>
+            </body>
+          </worldbody>
+        </mujoco>
+        """,
+    )
+    resolution = resolve_asset_root(asset_root=source, profile_path=None, env={})
+
+    with pytest.raises(LabError) as exc:
+        inspect_model(resolution)
+
+    assert exc.value.code == "XML_BOOLEAN_PARSE_FAILED"
+    assert "joint@limited" in exc.value.message
 
 
 def test_inspect_no_asset_or_masses_is_allowed_with_warning(tmp_path: Path) -> None:

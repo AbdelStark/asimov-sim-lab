@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 import typer
 
@@ -13,7 +13,14 @@ from asimov_sim_lab.doctor import run_doctor
 from asimov_sim_lab.errors import LabError
 from asimov_sim_lab.inspect import inspect_model, render_inspect_markdown
 from asimov_sim_lab.manifest import generate_asset_manifest
-from asimov_sim_lab.models import ErrorResult, ValidationIssue
+from asimov_sim_lab.models import (
+    DoctorResult,
+    ErrorResult,
+    InspectResult,
+    Status,
+    ValidationIssue,
+    ValidationResult,
+)
 from asimov_sim_lab.paths import resolve_asset_root
 from asimov_sim_lab.validation import validate_model
 
@@ -186,7 +193,11 @@ def _resolve_inspect_format(
         return "json"
     if markdown:
         return "markdown"
-    return output_format  # type: ignore[return-value]
+    if output_format == "json":
+        return "json"
+    if output_format == "markdown":
+        return "markdown"
+    return "text"
 
 
 def _usage_error(message: str) -> None:
@@ -212,7 +223,12 @@ def _handle_error(
             ErrorResult(command=command, status="error", issues=[issue]).model_dump_json(indent=2)
             + "\n"
         )
-        _emit(payload, output)
+        try:
+            _emit(payload, output)
+        except LabError as output_error:
+            typer.echo(str(error), err=True)
+            typer.echo(str(output_error), err=True)
+            raise typer.Exit(output_error.exit_code) from output_error
     else:
         typer.echo(str(error), err=True)
     raise typer.Exit(error.exit_code)
@@ -233,14 +249,25 @@ def _write_text(path: Path, content: str) -> None:
             "Pass a file path for --output or --manifest-output.",
             exit_code=2,
         )
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with NamedTemporaryFile("w", encoding="utf-8", delete=False, dir=path.parent) as handle:
-        handle.write(content)
-        temporary = Path(handle.name)
-    os.replace(temporary, path)
+    temporary: Path | None = None
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with NamedTemporaryFile("w", encoding="utf-8", delete=False, dir=path.parent) as handle:
+            handle.write(content)
+            temporary = Path(handle.name)
+        os.replace(temporary, path)
+    except OSError as exc:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+        raise LabError(
+            "OUTPUT_WRITE_FAILED",
+            f"Could not write output path: {path}: {exc}",
+            "Check directory permissions and available disk space.",
+            exit_code=2,
+        ) from exc
 
 
-def _doctor_text(result: Any) -> str:
+def _doctor_text(result: DoctorResult) -> str:
     lines = [f"status: {result.status}", f"asset_root: {result.resolved_asset_root or ''}"]
     for check in result.checks:
         code = f" [{check.code}]" if check.code else ""
@@ -248,14 +275,14 @@ def _doctor_text(result: Any) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _inspect_text(result: Any) -> str:
+def _inspect_text(result: InspectResult) -> str:
     lines = [
         f"model: {result.model_name}",
         f"status: {result.status}",
         (
             f"bodies={result.body_count} joints={result.joint_count} "
             f"actuators={result.actuator_count} sensors={result.sensor_count} "
-            f"meshes={result.mesh_count}"
+            f"meshes={result.mesh_count} geoms={result.geom_count}"
         ),
         f"cameras={result.camera_count} sites={result.site_count}",
     ]
@@ -266,7 +293,7 @@ def _inspect_text(result: Any) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _validation_text(result: Any) -> str:
+def _validation_text(result: ValidationResult) -> str:
     lines = [
         f"status: {result.status}",
         f"passed: {result.passed}",
@@ -277,5 +304,5 @@ def _validation_text(result: Any) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _doctor_exit_code(status: str) -> int:
+def _doctor_exit_code(status: Status) -> int:
     return 3 if status == "error" else 0

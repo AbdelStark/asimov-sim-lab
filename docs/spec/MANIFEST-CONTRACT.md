@@ -8,7 +8,7 @@ This contract defines the machine-readable manifest that every serious command w
 - `doctor`
 - `inspect`
 - `validate`
-- future `open` and `capture`
+- future `open`, `capture`, and evidence-bundle commands
 
 The manifest is the repo's first trust boundary. If the manifest is incomplete or stale, downstream reports must say so loudly.
 
@@ -77,9 +77,10 @@ class AssetManifest(BaseModel):
 3. The manifest must record checksums for the primary XML and every mesh file included in scope.
 4. Missing optional files may produce warnings.
 5. Missing required files must fail validation.
-6. Commands consuming the manifest must reject unknown future-major schema versions.
+6. Future commands that consume persisted manifests must reject unknown future-major schema versions.
 7. Git metadata must be recorded when the asset root is itself a Git worktree root.
 8. Dirty or unpinned source provenance warns by default and fails under `--strict`.
+9. If malformed XML prevents mesh-reference provenance extraction, the manifest must record an `XML_PARSE_FAILED` warning rather than silently omitting references.
 
 ## Supported upstream layout for MVP
 The MVP only promises support for this upstream shape:

@@ -40,7 +40,8 @@ def generate_asset_manifest(resolution: AssetRootResolution) -> AssetManifest:
 
     primary_xml_path = asset_root / PRIMARY_XML
     mesh_dir = asset_root / MESH_DIR
-    referenced = _mesh_file_references(primary_xml_path)
+    referenced, reference_warnings = _mesh_file_references(primary_xml_path)
+    warnings.extend(reference_warnings)
     meshes = [
         MeshEntry(
             relative_path=_relative(asset_root, path),
@@ -70,22 +71,25 @@ def _mesh_files(mesh_dir: Path) -> list[Path]:
     )
 
 
-def _mesh_file_references(primary_xml_path: Path) -> dict[str, list[str]]:
+def _mesh_file_references(primary_xml_path: Path) -> tuple[dict[str, list[str]], list[str]]:
     try:
         root = ET.parse(primary_xml_path).getroot()
-    except ET.ParseError:
-        return {}
+    except ET.ParseError as exc:
+        return {}, [
+            "XML_PARSE_FAILED: could not derive mesh reference provenance from "
+            f"{PRIMARY_XML.as_posix()}: {exc}"
+        ]
     references: dict[str, list[str]] = {}
     asset = root.find("asset")
     if asset is None:
-        return references
+        return references, []
     for mesh in asset.findall("mesh"):
         file_name = mesh.attrib.get("file")
         mesh_name = mesh.attrib.get("name", file_name)
         if file_name is None or mesh_name is None:
             continue
         references.setdefault(file_name, []).append(mesh_name)
-    return references
+    return references, []
 
 
 def _sha256(path: Path) -> str:

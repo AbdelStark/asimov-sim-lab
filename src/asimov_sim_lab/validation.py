@@ -153,13 +153,13 @@ def _validate_sensor_references(inspect_result: InspectResult) -> list[Validatio
     joint_names = {joint.name for joint in inspect_result.joints}
     site_names = {site.name for site in inspect_result.sites}
     camera_names = {camera.name for camera in inspect_result.cameras}
-    mesh_names = {mesh.name for mesh in inspect_result.meshes}
+    geom_names = {geom.name for geom in inspect_result.geoms}
     known_by_type = {
         "body": body_names,
         "joint": joint_names,
         "site": site_names,
         "camera": camera_names,
-        "geom": mesh_names,
+        "geom": geom_names,
     }
     issues: list[ValidationIssue] = []
     for sensor in inspect_result.sensors:
@@ -171,6 +171,19 @@ def _validate_sensor_references(inspect_result: InspectResult) -> list[Validatio
             known = known_by_type.get(sensor.objtype)
             if known is not None and sensor.objname not in known:
                 issues.append(_sensor_missing(sensor.name, sensor.objname, sensor.objtype))
+            elif known is None:
+                issues.append(
+                    ValidationIssue(
+                        code="SENSOR_TARGET_TYPE_UNSUPPORTED",
+                        severity="warning",
+                        message=(
+                            f"Sensor {sensor.name!r} uses unsupported objtype "
+                            f"{sensor.objtype!r}; target was not validated."
+                        ),
+                        remediation="Extend the validator or use a supported MJCF object type.",
+                        object_name=sensor.name,
+                    )
+                )
     return issues
 
 

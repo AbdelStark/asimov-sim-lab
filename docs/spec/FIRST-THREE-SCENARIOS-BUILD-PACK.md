@@ -5,6 +5,8 @@ Turn the first implementation phase into three narrow, testable work packs inste
 
 These are not marketing milestones. They are the first truthful value loops.
 
+Status as of May 1, 2026: all three work packs are implemented in the alpha MVP. This file remains as the build-pack contract and historical sequencing record.
+
 ## Work pack 1 — Asset discovery + doctor
 ### Goal
 Prove the repo can locate a supported Asimov checkout and emit a manifest-backed health report.
@@ -51,7 +53,7 @@ Parse the canonical MJCF entrypoint and emit the first real model contract artif
 
 ## Work pack 3 — Validation engine for references + presets
 ### Goal
-Make validation a real product surface rather than a TODO comment.
+Make validation a real product surface rather than a placeholder.
 
 ### Required files
 - `src/asimov_sim_lab/validation.py`
@@ -84,8 +86,8 @@ Keep the first fixtures tiny and synthetic.
 
 The early goal is contract correctness, not proving full upstream compatibility on day one. Real upstream smoke fixtures can be added immediately after the synthetic contract path is stable.
 
-## Exit condition for phase 3 start
-When these three work packs are locked, coding can begin without re-arguing repo shape, result schemas, or CLI semantics.
+## Exit condition
+When these three work packs are locked, later work can proceed without re-arguing repo shape, result schemas, or CLI semantics.
 
 ## Implementation expansion
 The interactive decision pass expanded the first implementation from work pack 1 only to the full MVP core:

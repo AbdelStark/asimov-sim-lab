@@ -47,6 +47,7 @@ This file records the locked MVP decisions that turn the RFC package into an exe
 - `passive` means no actuator targets the joint.
 - `floating_base` is passive but distinguished with `joint_type="free"`.
 - Cameras and sites are included in JSON with minimal fields.
+- Concrete geoms are included so sensor `objtype="geom"` references validate against geom names, not mesh asset names.
 - Detailed inertia export is deferred; `total_declared_mass_kg` is allowed as a declared-XML summary.
 - Actuators are parsed generically from direct children of `<actuator>`.
 - Sensor entries include enough target metadata to validate references.
@@ -57,7 +58,8 @@ This file records the locked MVP decisions that turn the RFC package into an exe
 - Validation derives joint limits and references from the current XML every run.
 - `validate` owns failure semantics for reference integrity.
 - `inspect` may warn about missing mesh references but does not replace `validate`.
-- Mesh resolution uses `compiler@meshdir` when present, but it must normalize to the supported mesh directory.
+- Mesh resolution uses `compiler@meshdir` when present; unsupported mesh directories fail with `UNSUPPORTED_SOURCE_LAYOUT`.
+- Malformed numeric and boolean MJCF attributes fail contract extraction rather than serializing as `null`.
 - Hinge/slide ranges are required when limited or preset-targetable; missing non-limited ranges warn.
 - Validation issue codes are flat uppercase strings with domain prefixes.
 - `--strict` applies across commands and escalates defined evidence-quality warnings, not harmless inventory.

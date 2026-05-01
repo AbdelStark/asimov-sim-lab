@@ -49,6 +49,51 @@ def test_doctor_output_directory_error_text(minimal_source: Path, tmp_path: Path
     assert "OUTPUT_PATH_IS_DIRECTORY" in result.stderr
 
 
+def test_doctor_output_directory_error_json_does_not_recurse(
+    minimal_source: Path, tmp_path: Path
+) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "doctor",
+            "--asset-root",
+            str(minimal_source),
+            "--format",
+            "json",
+            "--output",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert result.stdout == ""
+    assert "OUTPUT_PATH_IS_DIRECTORY" in result.stderr
+
+
+def test_doctor_output_write_failure_json_does_not_recurse(
+    minimal_source: Path, tmp_path: Path
+) -> None:
+    blocker = tmp_path / "not-a-directory"
+    blocker.write_text("x", encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "doctor",
+            "--asset-root",
+            str(minimal_source),
+            "--format",
+            "json",
+            "--output",
+            str(blocker / "doctor.json"),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert result.stdout == ""
+    assert "OUTPUT_WRITE_FAILED" in result.stderr
+
+
 def test_inspect_text_and_manifest_output(minimal_source: Path, tmp_path: Path) -> None:
     manifest_path = tmp_path / "manifest.json"
 

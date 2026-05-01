@@ -1,6 +1,9 @@
 # SCHEDULE — Asimov Sim Lab
 
 ## Phase 1 — Spec package
+
+Status: complete.
+
 - repo creation
 - uv scaffold
 - product spec
@@ -8,21 +11,48 @@
 - RFC set
 
 ## Phase 2 — Contract deepening
-- schema contracts
+
+Status: complete.
+
+- manifest contract
+- result schema contract
 - CLI/export contracts
 - fixture strategy
 - validation taxonomy
+- profile contract
 
 ## Phase 3 — Runnable core
-- asset sync/loading path
-- parser / contract extraction
+
+Status: complete for alpha MVP.
+
+- asset-root resolution
+- manifest generation
+- inspect contract extraction
 - validation commands
-- one smoke demo path
+- generated JSON Schemas
+- synthetic fixture coverage
+- CI and local quality gates
+- optional real-upstream smoke
 
-## Phase 4 — Product surface
-- secondary UI/viewer/report surface
-- richer exports / screenshots / graph rendering as applicable
-- CI hardening and evidence bundles
+## Phase 4 — Alpha hardening
 
-## Recommended sequencing note
-Start here first. Fastest path to a credible robotics artifact with real upstream leverage and low infra risk.
+Status: next.
+
+- public field and error-code documentation
+- reproducible evidence bundle
+- optional real-upstream smoke report artifact
+- stronger schema-version compatibility checks
+- dependency and release-readiness review
+
+## Phase 5 — Product surface
+
+Status: deferred until Phase 4 exits.
+
+- MuJoCo viewer/open contract behind the `viewer` extra
+- richer exports or graph rendering
+- screenshot/capture contract
+- report viewer or local UI
+
+## Sequencing note
+
+Do not add Phase 5 surfaces until Phase 4 can prove the core contracts with local and optional real-upstream evidence.

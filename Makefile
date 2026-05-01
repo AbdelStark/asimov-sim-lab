@@ -1,4 +1,4 @@
-.PHONY: build check lint schemas security smoke-real test type
+.PHONY: build check lint schemas schemas-update security smoke-real test type
 
 check: lint type schemas test build security
 
@@ -13,8 +13,10 @@ test:
 	uv run pytest
 
 schemas:
+	uv run python scripts/generate_schemas.py --check
+
+schemas-update:
 	uv run python scripts/generate_schemas.py
-	git diff --exit-code -- docs/schemas
 
 build:
 	uv build

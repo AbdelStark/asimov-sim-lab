@@ -53,6 +53,55 @@ def test_validate_sensor_missing_reference(tmp_path: Path) -> None:
     assert not result.passed
 
 
+def test_validate_sensor_geom_reference_uses_geom_namespace(tmp_path: Path) -> None:
+    source = _source(
+        tmp_path,
+        """
+        <mujoco model="GeomSensor">
+          <compiler meshdir="../assets/meshes"/>
+          <asset><mesh name="left" file="LEFT_HIP_PITCH.STL"/></asset>
+          <worldbody>
+            <body name="pelvis_link">
+              <freejoint name="floating_base"/>
+              <geom name="pelvis_collision" type="sphere" size="0.1"/>
+            </body>
+          </worldbody>
+          <sensor>
+            <framepos name="good_geom_sensor" objtype="geom" objname="pelvis_collision"/>
+            <framepos name="bad_geom_sensor" objtype="geom" objname="left"/>
+          </sensor>
+        </mujoco>
+        """,
+    )
+    resolution = resolve_asset_root(asset_root=source, profile_path=None, env={})
+
+    result = validate_model(resolution)
+
+    missing = [issue for issue in result.issues if issue.code == "SENSOR_REFERENCE_MISSING"]
+    assert len(missing) == 1
+    assert missing[0].object_name == "bad_geom_sensor"
+    assert not result.passed
+
+
+def test_validate_unsupported_meshdir_fails(tmp_path: Path) -> None:
+    source = _source(
+        tmp_path,
+        """
+        <mujoco model="BadMeshdir">
+          <compiler meshdir="../../outside"/>
+          <asset><mesh name="left" file="LEFT_HIP_PITCH.STL"/></asset>
+          <worldbody><body name="pelvis_link"><freejoint name="floating_base"/></body></worldbody>
+        </mujoco>
+        """,
+    )
+    resolution = resolve_asset_root(asset_root=source, profile_path=None, env={})
+
+    with pytest.raises(LabError) as exc:
+        validate_model(resolution)
+
+    assert exc.value.code == "UNSUPPORTED_SOURCE_LAYOUT"
+
+
 def test_validate_actuator_without_target_warns(tmp_path: Path) -> None:
     source = _source(
         tmp_path,
