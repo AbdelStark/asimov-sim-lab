@@ -1,6 +1,9 @@
-.PHONY: build check lint registry release-dry-run release-evidence-check schemas schemas-update security smoke-real test type
+.PHONY: build check demo lint registry release-dry-run release-evidence-check schemas schemas-update security smoke-real test type
 
 check: lint type schemas registry test build security
+
+demo:
+	uv run python scripts/demo.py
 
 lint:
 	uv run ruff format --check .

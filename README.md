@@ -56,6 +56,16 @@ strict_validation = true
 
 `.asimov-sim-lab/` is local ignored state. Do not commit machine-specific paths or generated local reports unless they are intentional evidence artifacts.
 
+## Demo
+
+Walk every public command end-to-end against the synthetic fixture, with rich-formatted output:
+
+```bash
+make demo
+```
+
+That runs `doctor` → `inspect` → `validate` → `runtime-smoke` → `open` preflight → `evidence` → `export` → release-evidence verification, then re-runs `validate` against a broken fixture to show diagnostics. No upstream Asimov checkout required. Pass `--asset-root /absolute/path/to/asimov-v1` to point it at a real checkout, or `--keep-output` to preserve the generated bundle and archive.
+
 ## Use
 
 Check layout and provenance:
