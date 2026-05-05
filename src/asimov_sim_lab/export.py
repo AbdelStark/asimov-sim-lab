@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import gzip
-import os
 import re
 import tarfile
 from pathlib import Path
@@ -188,7 +187,7 @@ def _write_deterministic_archive(
             ):
                 for relative_path in sorted(relative_paths):
                     _add_archive_file(tar, package_dir, relative_path)
-        os.replace(temporary, archive_path)
+        temporary.replace(archive_path)
     except OSError as exc:
         if temporary is not None:
             temporary.unlink(missing_ok=True)

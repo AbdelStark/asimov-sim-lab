@@ -70,7 +70,7 @@ def run_runtime_smoke(
     started = perf_counter()
     try:
         model = runtime.MjModel.from_xml_path(str(xml_path))
-    except Exception as exc:  # noqa: BLE001 - MuJoCo raises several runtime-specific exceptions.
+    except Exception as exc:
         elapsed_ms = (perf_counter() - started) * 1000
         result = RuntimeSmokeResult(
             status="error",

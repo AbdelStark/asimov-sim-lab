@@ -106,8 +106,7 @@ def _validate_evidence_bundle(evidence: dict[str, Any], errors: list[str]) -> No
         "inspect-report.md",
     }
     missing = sorted(required - artifact_paths)
-    for relative in missing:
-        errors.append(f"evidence bundle is missing artifact entry: {relative}")
+    errors.extend(f"evidence bundle is missing artifact entry: {relative}" for relative in missing)
 
 
 def _validate_archive(

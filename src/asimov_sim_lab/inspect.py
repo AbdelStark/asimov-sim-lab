@@ -35,10 +35,10 @@ def inspect_model(resolution: AssetRootResolution) -> InspectResult:
 
     meshes = _mesh_assets(root)
     missing_meshes = _missing_mesh_files(meshes, compiler_meshdir.mesh_dir)
-    for missing in missing_meshes:
-        warnings.append(
-            f"MESH_REFERENCE_MISSING: mesh file referenced by MJCF is missing: {missing}"
-        )
+    warnings.extend(
+        f"MESH_REFERENCE_MISSING: mesh file referenced by MJCF is missing: {missing}"
+        for missing in missing_meshes
+    )
 
     bodies: list[str] = []
     geoms: list[GeomContract] = []
@@ -151,10 +151,10 @@ def render_inspect_markdown(result: InspectResult) -> str:
     lines.extend(
         ["", "## Cameras", "", "| name | body | mode | fovy |", "| --- | --- | --- | --- |"]
     )
-    for camera in result.cameras:
-        lines.append(
-            f"| {camera.name} | {camera.body} | {camera.mode or ''} | {camera.fovy or ''} |"
-        )
+    lines.extend(
+        f"| {camera.name} | {camera.body} | {camera.mode or ''} | {camera.fovy or ''} |"
+        for camera in result.cameras
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -219,11 +219,7 @@ def _mesh_assets(root: ET.Element) -> list[MeshAssetContract]:
 
 
 def _missing_mesh_files(meshes: list[MeshAssetContract], mesh_dir: Path) -> list[str]:
-    missing: list[str] = []
-    for mesh in meshes:
-        if not (mesh_dir / mesh.file).is_file():
-            missing.append(mesh.file)
-    return missing
+    return [mesh.file for mesh in meshes if not (mesh_dir / mesh.file).is_file()]
 
 
 def _walk_body(

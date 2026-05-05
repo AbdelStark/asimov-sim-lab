@@ -1,5 +1,12 @@
 # Asimov Sim Lab
 
+[![CI](https://github.com/AbdelStark/asimov-sim-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/AbdelStark/asimov-sim-lab/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Checked with mypy](https://img.shields.io/badge/mypy-strict-blue.svg)](https://mypy-lang.org/)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+
 Asimov Sim Lab is a Python CLI and library that inspects and validates a local Asimov v1 MuJoCo checkout, then emits schema-backed evidence artifacts.
 
 ## Status
@@ -223,3 +230,11 @@ Next three milestones:
 ## Help
 
 Use GitHub issues for bugs, feature proposals, and documentation gaps. Include the command, exit code, JSON output when available, asset-root layout, and whether the source checkout was dirty.
+
+## Security
+
+Report vulnerabilities privately. See [SECURITY.md](SECURITY.md) for the disclosure policy and supported versions.
+
+## License
+
+Released under the [MIT License](LICENSE).

@@ -40,7 +40,7 @@ line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
+select = ["E", "F", "I", "UP", "B", "SIM", "PERF", "PT", "PTH", "RUF", "N"]
 
 [tool.pytest.ini_options]
 addopts = "-q --cov=asimov_sim_lab --cov-report=term-missing --cov-fail-under=90"

@@ -55,7 +55,7 @@ class _DiagnosticCodeVisitor(ast.NodeVisitor):
     def __init__(self) -> None:
         self.codes: set[str] = set()
 
-    def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
+    def visit_Call(self, node: ast.Call) -> None:
         name = _call_name(node.func)
         if name == "LabError" and node.args:
             self.codes.update(_codes_in_expr(node.args[0]))
@@ -72,7 +72,7 @@ class _DiagnosticCodeVisitor(ast.NodeVisitor):
                 self.codes.update(_codes_in_expr(keyword.value))
         self.generic_visit(node)
 
-    def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
+    def visit_Assign(self, node: ast.Assign) -> None:
         target_names = {target.id for target in node.targets if isinstance(target, ast.Name)}
         if "STRICT_WARNING_CODES" in target_names:
             self.codes.update(_codes_in_expr(node.value))
@@ -80,7 +80,7 @@ class _DiagnosticCodeVisitor(ast.NodeVisitor):
             self.codes.update(_codes_in_expr(node.value))
         self.generic_visit(node)
 
-    def visit_Constant(self, node: ast.Constant) -> None:  # noqa: N802
+    def visit_Constant(self, node: ast.Constant) -> None:
         if isinstance(node.value, str):
             self.codes.update(match.group(1) for match in PREFIX_RE.finditer(node.value))
             if node.value == "WARNING" or node.value.endswith("_WARNING"):

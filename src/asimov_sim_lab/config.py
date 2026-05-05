@@ -111,7 +111,7 @@ def load_profile(
 
 
 def _profile_unknown_field_warnings(raw: Mapping[str, object]) -> list[str]:
-    warnings: list[str] = []
-    for key in sorted(set(raw) - ALLOWED_TOP_LEVEL_KEYS):
-        warnings.append(f"PROFILE_UNKNOWN_FIELD: unknown top-level profile key {key!r}")
-    return warnings
+    return [
+        f"PROFILE_UNKNOWN_FIELD: unknown top-level profile key {key!r}"
+        for key in sorted(set(raw) - ALLOWED_TOP_LEVEL_KEYS)
+    ]

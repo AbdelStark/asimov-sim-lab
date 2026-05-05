@@ -5,11 +5,11 @@ from pathlib import Path
 import pytest
 
 
-@pytest.fixture()
+@pytest.fixture
 def fixtures_dir() -> Path:
     return Path(__file__).parent / "fixtures"
 
 
-@pytest.fixture()
+@pytest.fixture
 def minimal_source(fixtures_dir: Path) -> Path:
     return fixtures_dir / "source_roots" / "minimal_valid"

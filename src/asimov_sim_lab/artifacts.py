@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -47,7 +46,7 @@ def write_bytes_atomic(path: Path, content: bytes) -> None:
         with NamedTemporaryFile("wb", delete=False, dir=path.parent) as handle:
             handle.write(content)
             temporary = Path(handle.name)
-        os.replace(temporary, path)
+        temporary.replace(path)
     except OSError as exc:
         if temporary is not None:
             temporary.unlink(missing_ok=True)

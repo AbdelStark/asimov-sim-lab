@@ -500,8 +500,7 @@ def _inspect_text(result: InspectResult) -> str:
     ]
     if result.total_declared_mass_kg is not None:
         lines.append(f"total_declared_mass_kg={result.total_declared_mass_kg}")
-    for warning in result.warnings:
-        lines.append(f"warning: {warning}")
+    lines.extend(f"warning: {warning}" for warning in result.warnings)
     return "\n".join(lines) + "\n"
 
 
@@ -511,8 +510,7 @@ def _validation_text(result: ValidationResult) -> str:
         f"passed: {result.passed}",
         f"issue_count: {result.issue_count}",
     ]
-    for issue in result.issues:
-        lines.append(f"{issue.severity}: {issue.code}: {issue.message}")
+    lines.extend(f"{issue.severity}: {issue.code}: {issue.message}" for issue in result.issues)
     return "\n".join(lines) + "\n"
 
 
@@ -525,12 +523,11 @@ def _evidence_text(result: EvidenceBundleResult) -> str:
         f"runtime_smoke_skipped: {result.runtime_smoke_skipped}",
         f"bundle_dir: {result.bundle_dir}",
     ]
-    for artifact in result.artifacts:
-        lines.append(
-            f"artifact: {artifact.artifact_type} {artifact.relative_path} sha256={artifact.sha256}"
-        )
-    for warning in result.warnings:
-        lines.append(f"warning: {warning}")
+    lines.extend(
+        f"artifact: {artifact.artifact_type} {artifact.relative_path} sha256={artifact.sha256}"
+        for artifact in result.artifacts
+    )
+    lines.extend(f"warning: {warning}" for warning in result.warnings)
     return "\n".join(lines) + "\n"
 
 
@@ -556,8 +553,7 @@ def _runtime_smoke_text(result: RuntimeSmokeResult) -> str:
         )
     if result.failure_code is not None:
         lines.append(f"failure: {result.failure_code}: {result.failure_message or ''}")
-    for warning in result.warnings:
-        lines.append(f"warning: {warning}")
+    lines.extend(f"warning: {warning}" for warning in result.warnings)
     return "\n".join(lines) + "\n"
 
 
@@ -571,8 +567,7 @@ def _export_text(result: ExportPackageResult) -> str:
         f"archive_sha256: {result.archive_sha256}",
         f"evidence_bundle_path: {result.evidence_bundle_path}",
     ]
-    for warning in result.warnings:
-        lines.append(f"warning: {warning}")
+    lines.extend(f"warning: {warning}" for warning in result.warnings)
     return "\n".join(lines) + "\n"
 
 
@@ -593,8 +588,7 @@ def _viewer_open_text(result: ViewerOpenResult) -> str:
         lines.append(f"failure: {result.failure_code}: {result.failure_message or ''}")
     if result.failure_help_url is not None:
         lines.append(f"help: {result.failure_help_url}")
-    for warning in result.warnings:
-        lines.append(f"warning: {warning}")
+    lines.extend(f"warning: {warning}" for warning in result.warnings)
     return "\n".join(lines) + "\n"
 
 
