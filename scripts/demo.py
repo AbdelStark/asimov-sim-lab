@@ -12,6 +12,7 @@ Usage::
     uv run python scripts/demo.py
     uv run python scripts/demo.py --asset-root /absolute/path/to/asimov-v1
     uv run python scripts/demo.py --keep-output  # keep the demo workdir
+    uv run python scripts/demo.py --html-report  # also emit + open an HTML report
 
 Exit codes mirror the CLI: ``0`` on success, ``1`` if validation of the
 canonical fixture fails (which would indicate a regression, since the
@@ -24,6 +25,7 @@ import argparse
 import shutil
 import sys
 import tempfile
+import webbrowser
 from pathlib import Path
 
 from rich.console import Console
@@ -46,13 +48,16 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_FIXTURE = REPO_ROOT / "tests" / "fixtures" / "source_roots" / "minimal_valid"
 BROKEN_FIXTURE = REPO_ROOT / "tests" / "fixtures" / "source_roots" / "broken_actuator_ref"
 PRESET_DIR = REPO_ROOT / "docs" / "examples" / "presets"
+DEFAULT_HTML_REPORT = REPO_ROOT / ".asimov-sim-lab" / "demo-report.html"
+HTML_REPORT_TITLE = "Asimov Sim Lab — Demo Report"
 
 STATUS_STYLES = {"ok": "bold green", "warning": "bold yellow", "error": "bold red"}
 
 
 def main() -> int:
     args = _parse_args()
-    console = Console()
+    record = args.html_report is not None
+    console = Console(record=record)
 
     asset_root = Path(args.asset_root).resolve() if args.asset_root else DEFAULT_FIXTURE
     if args.output_dir:
@@ -81,6 +86,13 @@ def main() -> int:
 
     console.print()
     console.print(Panel.fit("[bold green]All showcase steps completed successfully.[/bold green]"))
+
+    if args.html_report is not None:
+        report_path = Path(args.html_report).resolve()
+        _write_html_report(console, report_path)
+        console.print(f"[bold]html report:[/bold] {report_path}")
+        if not args.no_open_report:
+            _open_in_browser(console, report_path)
     return 0
 
 
@@ -101,6 +113,22 @@ def _parse_args() -> argparse.Namespace:
         "--keep-output",
         action="store_true",
         help="Do not delete the demo workdir on exit.",
+    )
+    parser.add_argument(
+        "--html-report",
+        nargs="?",
+        const=str(DEFAULT_HTML_REPORT),
+        default=None,
+        metavar="PATH",
+        help=(
+            "Also write a self-contained HTML report of the run. "
+            f"Defaults to {DEFAULT_HTML_REPORT.relative_to(REPO_ROOT)} when no PATH is given."
+        ),
+    )
+    parser.add_argument(
+        "--no-open-report",
+        action="store_true",
+        help="When --html-report is set, do not open the report in a browser.",
     )
     return parser.parse_args()
 
@@ -377,6 +405,70 @@ def _run_broken_fixture(console: Console) -> None:
     console.print(
         "[dim]→ this failure is expected; the demo proves diagnostics surface cleanly.[/dim]",
     )
+
+
+def _write_html_report(console: Console, report_path: Path) -> None:
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    console.save_html(str(report_path), clear=False, code_format=_HTML_CODE_FORMAT)
+
+
+def _open_in_browser(console: Console, report_path: Path) -> None:
+    try:
+        opened = webbrowser.open(report_path.as_uri())
+    except webbrowser.Error as exc:
+        console.print(f"[yellow]could not open browser:[/yellow] {exc}")
+        return
+    if not opened:
+        console.print("[yellow]no browser available to open the report.[/yellow]")
+
+
+_REPORT_CSS = """\
+body {
+  background: #0b0e14;
+  color: #e6e6e6;
+  margin: 0;
+  padding: 2rem 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+header { max-width: 1200px; margin: 0 auto 1rem; }
+h1 { margin: 0 0 1rem; font-size: 1.4rem; }
+.subtitle { color: #9aa4b2; margin: 0 0 1.5rem; font-size: 0.9rem; }
+pre {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  border-radius: 8px;
+  background: #1a1f29;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.45;
+}
+"""
+
+_HTML_CODE_FORMAT = (
+    "<!DOCTYPE html>\n"
+    '<html lang="en">\n'
+    "<head>\n"
+    '<meta charset="UTF-8">\n'
+    f"<title>{HTML_REPORT_TITLE}</title>\n"
+    "<style>\n"
+    "{stylesheet}\n"
+    f"{_REPORT_CSS.replace('{', '{{').replace('}', '}}')}"
+    "</style>\n"
+    "</head>\n"
+    "<body>\n"
+    "<header>\n"
+    f"<h1>{HTML_REPORT_TITLE}</h1>\n"
+    '<p class="subtitle">Captured from <code>scripts/demo.py</code>'
+    " via <code>rich.Console.save_html</code>.</p>\n"
+    "</header>\n"
+    "<pre><code>{code}</code></pre>\n"
+    "</body>\n"
+    "</html>\n"
+)
 
 
 def _print_issues(console: Console, issues: object) -> None:

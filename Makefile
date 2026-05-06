@@ -3,7 +3,7 @@
 check: lint type schemas registry test build security
 
 demo:
-	uv run python scripts/demo.py
+	uv run python scripts/demo.py --html-report
 
 lint:
 	uv run ruff format --check .
