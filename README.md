@@ -61,8 +61,11 @@ uv run asimov-sim-lab export   --output-dir ./export   --overwrite --format json
 Or run the full pipeline against the bundled synthetic fixture (no upstream checkout required):
 
 ```bash
-make demo
+make demo            # end-to-end CLI walkthrough + HTML report
+make viewer-demo     # preflight, then launch the interactive MuJoCo viewer
 ```
+
+`viewer-demo` requires the optional viewer extra (`uv sync --extra viewer`) and uses the synthetic fixture by default; set `ASIMOV_SIM_LAB_ASSET_ROOT` to point at a real upstream checkout.
 
 ## CLI
 

@@ -1,9 +1,12 @@
-.PHONY: build check demo lint registry release-dry-run release-evidence-check schemas schemas-update security smoke-real test type
+.PHONY: build check demo lint registry release-dry-run release-evidence-check schemas schemas-update security smoke-real test type viewer-demo
 
 check: lint type schemas registry test build security
 
 demo:
 	uv run python scripts/demo.py --html-report
+
+viewer-demo:
+	uv run --extra viewer python scripts/viewer_demo.py $(if $(ASIMOV_SIM_LAB_ASSET_ROOT),--asset-root "$(ASIMOV_SIM_LAB_ASSET_ROOT)",)
 
 lint:
 	uv run ruff format --check .
