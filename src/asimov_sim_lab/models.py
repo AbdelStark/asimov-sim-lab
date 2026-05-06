@@ -1,4 +1,10 @@
-"""Public Pydantic contracts for Asimov Sim Lab."""
+"""Public Pydantic contracts and schema versions.
+
+All result, manifest, and contract types live here so that the published JSON
+Schemas under ``docs/schemas/`` stay in lockstep with the runtime models. Every
+model forbids extra fields (``extra="forbid"``) to prevent silent contract
+drift between releases.
+"""
 
 from __future__ import annotations
 

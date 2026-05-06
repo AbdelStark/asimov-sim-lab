@@ -1,4 +1,9 @@
-"""Typed domain errors for Asimov Sim Lab."""
+"""Typed domain errors for Asimov Sim Lab.
+
+Every public diagnostic carries a stable ``code`` (registered in
+``docs/spec/ERROR-CODE-REGISTRY.md``), a human ``message``, optional
+``remediation`` guidance, and the CLI ``exit_code`` to surface.
+"""
 
 from __future__ import annotations
 
@@ -7,7 +12,7 @@ from dataclasses import dataclass
 
 @dataclass(slots=True)
 class LabError(Exception):
-    """Recoverable command/domain error with a public code."""
+    """Recoverable command/domain error with a public, registered code."""
 
     code: str
     message: str

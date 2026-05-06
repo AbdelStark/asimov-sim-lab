@@ -1,4 +1,10 @@
-"""CLI entrypoint for Asimov Sim Lab."""
+"""Typer-based CLI entrypoint.
+
+Wires every subcommand (``doctor``, ``inspect``, ``validate``, ``runtime-smoke``,
+``open``, ``evidence``, ``export``) onto the typed library functions in this
+package, formats results as text/JSON/Markdown, writes artifacts atomically,
+and maps :class:`asimov_sim_lab.errors.LabError` instances to stable exit codes.
+"""
 
 from __future__ import annotations
 

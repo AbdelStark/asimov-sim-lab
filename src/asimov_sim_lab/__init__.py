@@ -1,4 +1,20 @@
-"""Asimov Sim Lab public API."""
+"""Asimov Sim Lab — schema-backed inspection and validation for MuJoCo robot models.
+
+This package exposes a stable, typed Python API mirroring the CLI surface:
+
+- :func:`resolve_asset_root` — locate the upstream checkout (CLI / profile / env).
+- :func:`generate_asset_manifest` — checksummed manifest of XML and mesh assets.
+- :func:`inspect_model` — parse the MJCF into an :class:`InspectResult` contract.
+- :func:`validate_model` — static validation of references, ranges, and presets.
+- :func:`run_runtime_smoke` — optional MuJoCo compile smoke check.
+- :func:`run_viewer_open_preflight` — schema-backed viewer preflight.
+- :func:`generate_evidence_bundle` — checksummed artifact directory.
+- :func:`generate_export_package` — deterministic ``.tar.gz`` archive.
+
+All result types are Pydantic v2 models with corresponding JSON Schemas under
+``docs/schemas/``. JSON is the source of truth; text and Markdown renderings are
+derived from it.
+"""
 
 __version__ = "0.1.0"
 
