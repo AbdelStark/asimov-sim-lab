@@ -1,250 +1,226 @@
+<div align="center">
+
 # Asimov Sim Lab
 
-[![CI](https://github.com/AbdelStark/asimov-sim-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/AbdelStark/asimov-sim-lab/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Checked with mypy](https://img.shields.io/badge/mypy-strict-blue.svg)](https://mypy-lang.org/)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+**Spec-first inspection, validation, and evidence packaging for the [Asimov v1](https://github.com/k-scale/asimov) MuJoCo humanoid model.**
 
-Asimov Sim Lab is a Python CLI and library that inspects and validates a local Asimov v1 MuJoCo checkout, then emits schema-backed evidence artifacts.
+[![CI](https://img.shields.io/github/actions/workflow/status/AbdelStark/asimov-sim-lab/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/AbdelStark/asimov-sim-lab/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-22863A?style=for-the-badge)](LICENSE)
+[![Ruff](https://img.shields.io/badge/lint-ruff-D7FF64?style=for-the-badge&logo=ruff&logoColor=black)](https://github.com/astral-sh/ruff)
+[![Mypy](https://img.shields.io/badge/types-mypy_strict-1F5082?style=for-the-badge&logo=python&logoColor=white)](https://mypy-lang.org/)
+[![uv](https://img.shields.io/badge/managed_by-uv-DE5FE9?style=for-the-badge)](https://github.com/astral-sh/uv)
+[![MuJoCo](https://img.shields.io/badge/runtime-MuJoCo_3.x-005571?style=for-the-badge)](https://mujoco.org/)
+[![Pydantic](https://img.shields.io/badge/contracts-pydantic_v2-E92063?style=for-the-badge&logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
 
-## Status
+</div>
 
-As of May 1, 2026, this project is an alpha MVP. It is suitable for local source inspection, contract export, validation, optional MuJoCo runtime smoke checks, preflight-only viewer/open checks, deterministic evidence packaging, and CI-backed development against synthetic fixtures. It is not yet suitable for production robotics operation, hardware claims, controller evaluation, policy training, video capture, interactive viewer launch, or public release automation. Known limitations: local-checkout-only source assets, no interactive MuJoCo viewer launch, no screenshot/capture flow, no UI, no automatic upstream download, and runtime smoke checks only verify that MuJoCo can compile the MJCF. Breaking changes before `1.0` are possible.
+---
 
-## Why It Exists
+Asimov Sim Lab turns a raw MuJoCo robot checkout — XML, STL meshes, presets — into **machine-readable, schema-backed evidence**: asset manifests, model contracts, validation reports, runtime smoke checks, and reproducible export bundles. Every artifact is content-addressed, versioned, and round-trippable via JSON Schema.
 
-The upstream Asimov v1 release contains useful MuJoCo assets, but raw XML and mesh files are hard to audit, diff, validate, and reuse safely. This repo turns that local source checkout into explicit contracts: asset manifests, model inspection JSON, validation results, optional runtime-smoke results, preflight-only viewer/open results, Markdown reports, checksummed evidence bundles, deterministic export archives, and JSON Schemas that future UI/report layers can trust.
+## Features
 
-## Who It Is For
-
-- Robotics developers inspecting the Asimov v1 simulation model.
-- Contributors validating MJCF, mesh, preset, and provenance changes.
-- Reviewers who need reproducible evidence tied to source files and checksums.
-- Future tools that need stable machine-readable model contracts.
+- **Schema-backed contracts.** Every output is a Pydantic model with a published [JSON Schema](docs/schemas/) — safe to consume from any language.
+- **Deterministic by default.** Stable artifact ordering, normalized timestamps, reproducible tarball hashes.
+- **Content-addressed evidence.** SHA-256 checksums for every XML, mesh, preset, and bundle artifact.
+- **MJCF inspection.** Bodies, joints, actuators, sensors, meshes, geoms, cameras, sites, declared masses, passive-joint inference.
+- **Static validation.** Mesh references, geom→mesh links, actuator/sensor targets, joint ranges, preset compatibility.
+- **Optional runtime smoke.** Compile the MJCF through real MuJoCo to verify it loads.
+- **Provenance tracking.** Git URL, commit, branch, dirty state, untracked count.
+- **Strict typing.** `mypy --strict`, `extra="forbid"` Pydantic models, typed CLI exit codes.
+- **Zero external services.** Reads a local checkout; never phones home.
 
 ## Install
 
-Requirements:
-
-- Python `>=3.12`
-- `uv`
-- A local Asimov v1 checkout containing `sim-model/xmls/asimov.xml`
+Requires Python `>= 3.12`, [`uv`](https://github.com/astral-sh/uv), and a local Asimov v1 checkout containing `sim-model/xmls/asimov.xml`.
 
 ```bash
-uv sync --extra dev
+git clone https://github.com/AbdelStark/asimov-sim-lab
+cd asimov-sim-lab
+uv sync --extra dev               # library + CLI + dev tooling
+uv sync --extra dev --extra viewer  # add the optional MuJoCo runtime
 ```
 
-Set the upstream asset root in one of three ways:
+The CLI is exposed as `asimov-sim-lab` (run via `uv run asimov-sim-lab ...`).
+
+## Quick Start
 
 ```bash
-uv run asimov-sim-lab doctor --asset-root /absolute/path/to/asimov-v1
+# Point at an upstream checkout
+export ASIMOV_SIM_LAB_ASSET_ROOT=/path/to/asimov-v1
+
+# Verify layout, hash assets, parse MJCF, validate, package evidence
+uv run asimov-sim-lab doctor   --format json
+uv run asimov-sim-lab inspect  --json
+uv run asimov-sim-lab validate --format json
+uv run asimov-sim-lab evidence --output-dir ./evidence --overwrite --format json
+uv run asimov-sim-lab export   --output-dir ./export   --overwrite --format json
 ```
 
-```bash
-export ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1
-uv run asimov-sim-lab doctor
-```
-
-```toml
-# .asimov-sim-lab/profile.toml
-schema_version = "0.1.0"
-default_asset_root = "/absolute/path/to/asimov-v1"
-strict_validation = true
-```
-
-`.asimov-sim-lab/` is local ignored state. Do not commit machine-specific paths or generated local reports unless they are intentional evidence artifacts.
-
-## Demo
-
-Walk every public command end-to-end against the synthetic fixture, with rich-formatted output:
+Or run the full pipeline against the bundled synthetic fixture (no upstream checkout required):
 
 ```bash
 make demo
 ```
 
-That runs `doctor` → `inspect` → `validate` → `runtime-smoke` → `open` preflight → `evidence` → `export` → release-evidence verification, then re-runs `validate` against a broken fixture to show diagnostics. No upstream Asimov checkout required. Pass `--asset-root /absolute/path/to/asimov-v1` to point it at a real checkout, or `--keep-output` to preserve the generated bundle and archive.
+## CLI
 
-## Use
+| Command | Purpose | Output |
+| --- | --- | --- |
+| `doctor` | Resolve asset root, check layout, read Git provenance | `DoctorResult` |
+| `inspect` | Parse MJCF into a stable model contract | `InspectResult` |
+| `validate` | Static checks against MJCF, meshes, presets | `ValidationResult` |
+| `runtime-smoke` | Compile the MJCF through MuJoCo (optional) | `RuntimeSmokeResult` |
+| `open` | Preflight viewer launch (no GUI) | `ViewerOpenResult` |
+| `evidence` | Bundle every artifact into a checksummed directory | `EvidenceBundleResult` |
+| `export` | Produce a deterministic `.tar.gz` from the bundle | `ExportPackageResult` |
 
-Check layout and provenance:
+All commands accept `--format text|json` (and `--markdown` where applicable), `--asset-root`, `--profile`, and `--strict`.
 
-```bash
-uv run asimov-sim-lab doctor --asset-root /absolute/path/to/asimov-v1 --format json
+### Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Success (warnings allowed) |
+| `1` | Validation failed or contract parsing failed |
+| `2` | Invalid CLI usage or output path |
+| `3` | Missing or unsupported source layout |
+
+## Python API
+
+Every CLI command has a typed library entry point. Results are Pydantic models — `.model_dump()` for dicts, `.model_dump_json()` for JSON.
+
+```python
+from pathlib import Path
+
+from asimov_sim_lab import (
+    inspect_model,
+    resolve_asset_root,
+    run_runtime_smoke,
+    validate_model,
+)
+
+resolution = resolve_asset_root(asset_root=Path("/path/to/asimov-v1"), profile_path=None)
+
+inspect = inspect_model(resolution)
+print(inspect.model_name, inspect.body_count, inspect.joint_count)
+
+validation = validate_model(resolution)
+assert validation.passed, validation.issues
+
+smoke = run_runtime_smoke(resolution, require_mujoco=True)
+assert smoke.loaded, smoke.failure_message
 ```
 
-Write an asset manifest:
+Bundle and archive an entire run:
 
-```bash
-uv run asimov-sim-lab doctor \
-  --asset-root /absolute/path/to/asimov-v1 \
-  --format json \
-  --manifest-output .asimov-sim-lab/asset-manifest.json
+```python
+from asimov_sim_lab import generate_evidence_bundle, generate_export_package
+
+bundle = generate_evidence_bundle(resolution, output_dir=Path("./evidence"), overwrite=True)
+package = generate_export_package(resolution, output_dir=Path("./export"), overwrite=True)
+
+print(package.archive_path, package.archive_sha256)
 ```
 
-Export the model contract:
+## Configuration
+
+Configure the asset root through any of (precedence: CLI > profile > env):
 
 ```bash
-uv run asimov-sim-lab inspect --asset-root /absolute/path/to/asimov-v1 --json
-uv run asimov-sim-lab inspect --asset-root /absolute/path/to/asimov-v1 --markdown
+uv run asimov-sim-lab inspect --asset-root /path/to/asimov-v1
 ```
-
-Validate references, ranges, sensors, actuators, and presets:
 
 ```bash
-uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --format json
-uv run asimov-sim-lab validate --asset-root /absolute/path/to/asimov-v1 --preset-dir docs/examples/presets --format json
+export ASIMOV_SIM_LAB_ASSET_ROOT=/path/to/asimov-v1
 ```
 
-Run the optional MuJoCo compiled-runtime smoke:
+```toml
+# .asimov-sim-lab/profile.toml
+schema_version       = "0.1.0"
+default_asset_root   = "/path/to/asimov-v1"
+strict_validation    = true
+```
+
+`.asimov-sim-lab/` is local state. Do not commit machine-specific paths.
+
+## Schemas
+
+JSON is the source of truth; text and Markdown are renderings. Every result type is published as a versioned JSON Schema:
+
+```
+docs/schemas/
+├── asset-manifest.schema.json
+├── doctor-result.schema.json
+├── error-result.schema.json
+├── evidence-bundle-result.schema.json
+├── export-package-manifest.schema.json
+├── export-package-result.schema.json
+├── inspect-result.schema.json
+├── runtime-smoke-result.schema.json
+├── validation-result.schema.json
+└── viewer-open-result.schema.json
+```
+
+Schemas are regenerated from the Pydantic models — drift is caught in CI:
 
 ```bash
-uv sync --extra viewer
-uv run asimov-sim-lab runtime-smoke --asset-root /absolute/path/to/asimov-v1 --require-mujoco --format json
+make schemas-update     # regenerate
+make schemas            # check (CI-equivalent)
 ```
-
-Without the `viewer` extra, `runtime-smoke` exits `0` by default with a warning and `skipped: true`. Use `--require-mujoco` when the runtime is expected to be installed.
-
-Run the viewer/open preflight contract:
-
-```bash
-uv sync --extra viewer
-uv run asimov-sim-lab open --asset-root /absolute/path/to/asimov-v1 --format json
-```
-
-`open` is preflight-only in this alpha. It validates the source checkout, requested preset, and MuJoCo compile path, then emits `ViewerOpenResult` with `opened=false` and `launch_mode=preflight_only`. It never opens an interactive window, steps simulation, captures media, or evaluates controllers.
-
-Generate a complete evidence bundle:
-
-```bash
-uv run asimov-sim-lab evidence \
-  --asset-root /absolute/path/to/asimov-v1 \
-  --output-dir .asimov-sim-lab/evidence \
-  --overwrite \
-  --format json
-```
-
-The bundle directory contains `asset-manifest.json`, `inspect-result.json`, `validation-result.json`, `runtime-smoke-result.json`, `inspect-report.md`, and `evidence-bundle.json`.
-
-Generate a deterministic export package:
-
-```bash
-uv run asimov-sim-lab export \
-  --asset-root /absolute/path/to/asimov-v1 \
-  --output-dir .asimov-sim-lab/export \
-  --overwrite \
-  --format json
-```
-
-The export directory contains a portable evidence bundle, `export-package-manifest.json`, `export-package-result.json`, and `asimov-sim-lab-evidence.tar.gz`. The archive normalizes timestamps and tar metadata by default, so identical inputs produce identical archive hashes.
-
-Verify an export package before attaching it to a release candidate:
-
-```bash
-uv run python scripts/check_release_evidence.py --export-dir .asimov-sim-lab/export
-```
-
-Generate a sanitized release-candidate dry-run report from a real-upstream export:
-
-```bash
-ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
-```
-
-Exit codes:
-
-- `0`: command succeeded, including warnings-only validation
-- `1`: validation failed or XML contract parsing failed
-- `2`: invalid CLI usage or invalid output path
-- `3`: missing or unsupported source layout
-
-## Contracts
-
-JSON artifacts are the source of truth. Text and Markdown are renderings.
-
-- `docs/schemas/asset-manifest.schema.json`
-- `docs/schemas/doctor-result.schema.json`
-- `docs/schemas/evidence-bundle-result.schema.json`
-- `docs/schemas/error-result.schema.json`
-- `docs/schemas/export-package-manifest.schema.json`
-- `docs/schemas/export-package-result.schema.json`
-- `docs/schemas/inspect-result.schema.json`
-- `docs/schemas/runtime-smoke-result.schema.json`
-- `docs/schemas/validation-result.schema.json`
-- `docs/schemas/viewer-open-result.schema.json`
-
-The inspect contract currently exports model name, bodies, joints, actuators, sensors, mesh assets, concrete geoms, cameras, sites, declared XML mass totals, passive-joint inference, and typed warnings. The validator checks supported source layout, mesh files, geom mesh references, actuator targets, sensor targets, joint ranges, and built-in or local TOML presets. Runtime smoke checks verify optional MuJoCo import and model compilation only; they do not simulate, control, or score robot behavior. `open` adds viewer-specific preflight gating and result shape without launching an interactive viewer.
 
 ## Architecture
 
-Core modules live in `src/asimov_sim_lab/`:
-
-- `paths.py`: asset-root resolution, supported-layout checks, Git provenance
-- `manifest.py`: checksummed source manifest generation
-- `inspect.py`: MJCF parsing and inspect-contract extraction
-- `validation.py`: reference, range, sensor, actuator, and preset validation
-- `presets.py`: built-in neutral preset and local TOML preset validation
-- `runtime.py`: optional MuJoCo compiled-runtime smoke validation
-- `viewer.py`: preflight-only viewer/open contract
-- `evidence.py`: checksummed evidence bundle generation
-- `export.py`: deterministic export archive generation
-- `models.py`: Pydantic public contracts and schema versions
-- `cli.py`: Typer command surface and output handling
-
-Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for invariants, data flow, failure modes, and the runbook.
-
-## Develop
-
-```bash
-uv lock --check
-uv run ruff format --check .
-uv run ruff check .
-uv run mypy
-uv run pytest
-uv run python scripts/generate_schemas.py --check
-uv run python scripts/check_error_registry.py --check
-uv build
-uv run pip-audit --skip-editable
+```
+cli.py
+ ├─ paths.py        asset-root resolution, layout checks, Git provenance
+ ├─ manifest.py     SHA-256 manifest of XML + meshes
+ ├─ inspect.py      MJCF parse → InspectResult
+ ├─ validation.py   static checks (refs, ranges, sensors, actuators, presets)
+ ├─ presets.py      built-in + local TOML presets
+ ├─ runtime.py      optional MuJoCo compile smoke
+ ├─ viewer.py       preflight viewer/open contract
+ ├─ evidence.py     checksummed bundle directory
+ ├─ export.py       deterministic tar.gz archive
+ └─ models.py       Pydantic contracts + schema versions
 ```
 
-Or run the full gate:
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for invariants, data flow, and failure modes.
+
+## Development
 
 ```bash
-make check
+uv sync --extra dev --extra viewer
+make check                # lint + types + schemas + registry + tests + build + audit
 ```
 
-Optional real-upstream smoke:
+Individual gates:
 
 ```bash
-ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make smoke-real
+make lint        # ruff format + ruff check
+make type        # mypy --strict
+make test        # pytest with branch coverage (>= 90%)
+make schemas     # JSON Schema drift check
+make registry    # error-code registry parity
+make security    # pip-audit
+make build       # uv build
 ```
 
-Release-candidate dry run:
+Run the pipeline against a real upstream checkout:
 
 ```bash
-ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
+ASIMOV_SIM_LAB_ASSET_ROOT=/path/to/asimov-v1 make smoke-real
 ```
 
-## Contribute
+## Contributing
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), [docs/spec/PRODUCT-SPEC.md](docs/spec/PRODUCT-SPEC.md), and [AGENTS.md](AGENTS.md). Keep changes contract-first: update code, tests, generated schemas, and docs together. Diagnostic-code changes must update [docs/spec/ERROR-CODE-REGISTRY.md](docs/spec/ERROR-CODE-REGISTRY.md). JSON-mode domain errors include a `help_url` back to that registry. Release candidates must follow [docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md](docs/spec/RELEASE-CANDIDATE-EVIDENCE-POLICY.md). Do not add interactive viewer launch, capture, controller, policy, or UI surfaces without a contract and tests.
-
-## Roadmap
-
-Next three milestones:
-
-- **M1: Publication-safe evidence review.** Exit criteria: a redaction/review guide covers absolute paths, upstream license disclosure, dirty-source warnings, and release attachments.
-- **M2: Schema compatibility policy.** Exit criteria: public schemas declare compatibility expectations for alpha changes, and tests catch accidental version drift.
-- **M3: Interactive viewer design gate.** Exit criteria: preflight telemetry from `open` is reviewed, and any GUI launch proposal includes shutdown/error behavior before implementation.
-
-## Help
-
-Use GitHub issues for bugs, feature proposals, and documentation gaps. Include the command, exit code, JSON output when available, asset-root layout, and whether the source checkout was dirty.
+Read [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), and [docs/spec/PRODUCT-SPEC.md](docs/spec/PRODUCT-SPEC.md). Changes are contract-first: code, tests, schemas, docs, and the [error-code registry](docs/spec/ERROR-CODE-REGISTRY.md) move together.
 
 ## Security
 
-Report vulnerabilities privately. See [SECURITY.md](SECURITY.md) for the disclosure policy and supported versions.
+Vulnerabilities: please report privately. See [SECURITY.md](SECURITY.md).
 
 ## License
 
-Released under the [MIT License](LICENSE).
+[MIT](LICENSE)
