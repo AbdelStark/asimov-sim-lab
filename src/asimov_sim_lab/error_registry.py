@@ -510,6 +510,5 @@ def _build_registry() -> dict[str, ErrorCodeEntry]:
 ERROR_CODES: Final[dict[str, ErrorCodeEntry]] = _build_registry()
 
 HELP_URL: Final[str] = (
-    "https://github.com/AbdelStark/asimov-sim-lab"
-    "/blob/main/src/asimov_sim_lab/error_registry.py"
+    "https://github.com/AbdelStark/asimov-sim-lab/blob/main/src/asimov_sim_lab/error_registry.py"
 )
