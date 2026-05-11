@@ -6,6 +6,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from asimov_sim_lab.cli import app
+from asimov_sim_lab.models import ERROR_REGISTRY_HELP_URL
 
 
 def test_doctor_text_mode_and_output_file(minimal_source: Path, tmp_path: Path) -> None:
@@ -37,7 +38,7 @@ def test_doctor_missing_asset_root_json_error() -> None:
     assert result.exit_code == 3
     payload = json.loads(result.stdout)
     assert payload["issues"][0]["code"] == "ASSET_ROOT_NOT_FOUND"
-    assert payload["help_url"] == "docs/spec/ERROR-CODE-REGISTRY.md"
+    assert payload["help_url"] == ERROR_REGISTRY_HELP_URL
 
 
 def test_doctor_output_directory_error_text(minimal_source: Path, tmp_path: Path) -> None:

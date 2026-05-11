@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from asimov_sim_lab._pipeline import PipelineContext
-from asimov_sim_lab.models import ERROR_REGISTRY_HELP_URL, Status, ValidationIssue, ViewerOpenResult
+from asimov_sim_lab.error_registry import HELP_URL as ERROR_REGISTRY_HELP_URL
+from asimov_sim_lab.models import Status, ValidationIssue, ViewerOpenResult
 from asimov_sim_lab.paths import PRIMARY_XML, AssetRootResolution
 from asimov_sim_lab.presets import load_preset_dir
 from asimov_sim_lab.runtime import MujocoModuleLike, run_runtime_smoke

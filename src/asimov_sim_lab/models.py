@@ -14,9 +14,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from asimov_sim_lab import __version__
+from asimov_sim_lab.error_registry import HELP_URL as ERROR_REGISTRY_HELP_URL
 
 SCHEMA_VERSION = "0.1.0"
-ERROR_REGISTRY_HELP_URL = "docs/spec/ERROR-CODE-REGISTRY.md"
 
 Status = Literal["ok", "warning", "error"]
 Severity = Literal["error", "warning"]

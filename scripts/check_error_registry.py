@@ -1,4 +1,10 @@
-"""Verify the public error-code registry covers emitted diagnostic codes."""
+"""Verify the public error-code registry covers emitted diagnostic codes.
+
+The registry of record lives in :mod:`asimov_sim_lab.error_registry`. This
+script discovers diagnostic codes by AST-walking the package source (without
+importing it) and verifies the registry is exactly the set of codes producers
+emit — no missing entries, no stale ones.
+"""
 
 from __future__ import annotations
 
@@ -10,17 +16,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "src" / "asimov_sim_lab"
-REGISTRY_PATH = ROOT / "docs" / "spec" / "ERROR-CODE-REGISTRY.md"
+REGISTRY_PATH = SOURCE_DIR / "error_registry.py"
 
 CODE_RE = re.compile(r"^[A-Z][A-Z0-9_]*[A-Z0-9]$")
 PREFIX_RE = re.compile(r"\b([A-Z][A-Z0-9]*_[A-Z0-9_]+):")
-REGISTRY_ROW_RE = re.compile(r"^\|\s*`([A-Z][A-Z0-9_]+)`\s*\|")
 
 
 def discover_source_codes(source_dir: Path = SOURCE_DIR) -> set[str]:
     """Extract diagnostic codes from Python source without executing the package."""
     codes: set[str] = set()
     for path in sorted(source_dir.rglob("*.py")):
+        if path == REGISTRY_PATH:
+            continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         visitor = _DiagnosticCodeVisitor()
         visitor.visit(tree)
@@ -29,25 +36,38 @@ def discover_source_codes(source_dir: Path = SOURCE_DIR) -> set[str]:
 
 
 def read_registry_codes(registry_path: Path = REGISTRY_PATH) -> set[str]:
-    """Read backtick-wrapped codes from the registry's first table column."""
+    """Parse the registry module's ``ErrorCodeEntry`` literals via AST.
+
+    Avoids importing the package so the script stays usable in isolation
+    (e.g. before the package is installed).
+    """
     try:
-        lines = registry_path.read_text(encoding="utf-8").splitlines()
+        source = registry_path.read_text(encoding="utf-8")
     except OSError as exc:
         raise SystemExit(f"could not read registry: {registry_path}: {exc}") from exc
 
+    tree = ast.parse(source, filename=str(registry_path))
     codes: set[str] = set()
     duplicates: set[str] = set()
-    for line in lines:
-        match = REGISTRY_ROW_RE.match(line)
-        if match is None:
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
             continue
-        code = match.group(1)
+        if _call_name(node.func) != "ErrorCodeEntry":
+            continue
+        if not node.args:
+            continue
+        first = node.args[0]
+        if not (isinstance(first, ast.Constant) and isinstance(first.value, str)):
+            continue
+        code = first.value
         if code in codes:
             duplicates.add(code)
         codes.add(code)
     if duplicates:
         duplicated = ", ".join(sorted(duplicates))
         raise SystemExit(f"duplicate registry codes: {duplicated}")
+    if not codes:
+        raise SystemExit(f"no entries found in registry: {registry_path}")
     return codes
 
 

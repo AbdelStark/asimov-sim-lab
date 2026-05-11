@@ -1,7 +1,7 @@
 """Typed domain errors for Asimov Sim Lab.
 
 Every public diagnostic carries a stable ``code`` (registered in
-``docs/spec/ERROR-CODE-REGISTRY.md``), a human ``message``, optional
+:mod:`asimov_sim_lab.error_registry`), a human ``message``, optional
 ``remediation`` guidance, and the CLI ``exit_code`` to surface.
 """
 

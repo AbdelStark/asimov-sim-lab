@@ -76,7 +76,7 @@
       "type": "string"
     },
     "help_url": {
-      "default": "docs/spec/ERROR-CODE-REGISTRY.md",
+      "default": "https://github.com/AbdelStark/asimov-sim-lab/blob/main/src/asimov_sim_lab/error_registry.py",
       "title": "Help Url",
       "type": "string"
     },

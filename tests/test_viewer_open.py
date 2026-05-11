@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 import asimov_sim_lab.cli as cli
 from asimov_sim_lab import runtime
 from asimov_sim_lab.cli import app
-from asimov_sim_lab.models import ViewerOpenResult
+from asimov_sim_lab.models import ERROR_REGISTRY_HELP_URL, ViewerOpenResult
 from asimov_sim_lab.paths import resolve_asset_root
 from asimov_sim_lab.viewer import run_viewer_open_preflight
 
@@ -88,7 +88,7 @@ def test_viewer_open_preflight_requires_mujoco(minimal_source: Path, monkeypatch
     assert result.status == "error"
     assert result.opened is False
     assert result.failure_code == "VIEWER_EXTRA_NOT_INSTALLED"
-    assert result.failure_help_url == "docs/spec/ERROR-CODE-REGISTRY.md"
+    assert result.failure_help_url == ERROR_REGISTRY_HELP_URL
 
 
 def test_viewer_open_preflight_maps_runtime_load_failure(minimal_source: Path) -> None:
@@ -209,7 +209,7 @@ def test_open_cli_text_includes_preflight_failure_details(
             failure_code="VIEWER_LAUNCH_FAILED",
             failure_message="could not load model",
             failure_remediation="Fix MJCF/runtime errors before opening the viewer.",
-            failure_help_url="docs/spec/ERROR-CODE-REGISTRY.md",
+            failure_help_url=ERROR_REGISTRY_HELP_URL,
         )
 
     monkeypatch.setattr(cli, "run_viewer_open_preflight", fake_preflight)
@@ -227,7 +227,7 @@ def test_open_cli_text_includes_preflight_failure_details(
     assert "launch_mode: preflight_only" in result.stdout
     assert "runtime_version: fake-runtime" in result.stdout
     assert "failure: VIEWER_LAUNCH_FAILED: could not load model" in result.stdout
-    assert "help: docs/spec/ERROR-CODE-REGISTRY.md" in result.stdout
+    assert f"help: {ERROR_REGISTRY_HELP_URL}" in result.stdout
     assert "warning: SOURCE_DIRTY" in result.stdout
 
 
