@@ -116,4 +116,55 @@ def test_read_git_metadata_for_clean_repo(tmp_path: Path) -> None:
 
     assert metadata.commit is not None
     assert metadata.dirty is False
+    assert metadata.untracked_count == 0
     assert metadata.warnings == []
+
+
+def test_read_git_metadata_counts_untracked_separately(tmp_path: Path) -> None:
+    # Verifies the dirty-vs-untracked split landed in PF-04: the dirty signal comes
+    # from `status --untracked-files=no`, untracked count from `ls-files --others`.
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_path, check=True)
+    (tmp_path / "tracked.txt").write_text("x", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=tmp_path, check=True, capture_output=True)
+    (tmp_path / "untracked.txt").write_text("y", encoding="utf-8")
+
+    metadata = read_git_metadata(tmp_path)
+
+    assert metadata.dirty is True
+    assert metadata.untracked_count == 1
+    assert any(w.startswith("SOURCE_DIRTY") for w in metadata.warnings)
+
+
+def test_read_git_metadata_surfaces_query_failure_as_unknown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Simulates a partial git failure (e.g., timeout): rev-parse confirms a checkout
+    # but a downstream sub-query returns None. PF-04 must surface this as "unknown"
+    # (null dirty), not the prior silent false negative of `dirty=False`.
+    from asimov_sim_lab import paths as paths_module
+
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_path, check=True)
+    (tmp_path / "tracked.txt").write_text("x", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=tmp_path, check=True, capture_output=True)
+
+    real_git = paths_module._git
+
+    def flaky_git(asset_root: Path, *args: str) -> str | None:
+        if args[:1] == ("status",) or args[:1] == ("ls-files",):
+            return None
+        return real_git(asset_root, *args)
+
+    monkeypatch.setattr(paths_module, "_git", flaky_git)
+
+    metadata = read_git_metadata(tmp_path)
+
+    assert metadata.commit is not None
+    assert metadata.dirty is None
+    assert metadata.untracked_count is None
+    assert any(w.startswith("SOURCE_GIT_QUERY_FAILED") for w in metadata.warnings)

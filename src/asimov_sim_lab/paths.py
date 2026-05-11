@@ -19,6 +19,7 @@ SIM_MODEL_README = Path("sim-model/README.md")
 
 STRICT_WARNING_CODES = {
     "SOURCE_DIRTY",
+    "SOURCE_GIT_QUERY_FAILED",
     "SOURCE_NOT_GIT_ROOT",
     "SOURCE_NOT_GIT",
     "SIM_MODEL_README_NOT_FOUND",
@@ -192,13 +193,41 @@ def read_git_metadata(asset_root: Path) -> GitMetadata:
     commit = _git(asset_root, "rev-parse", "HEAD")
     branch = _git(asset_root, "branch", "--show-current")
     repo_url = _git(asset_root, "config", "--get", "remote.origin.url")
-    status = _git(asset_root, "status", "--porcelain=v1", "--untracked-files=all") or ""
-    lines = [line for line in status.splitlines() if line.strip()]
-    untracked_count = sum(1 for line in lines if line.startswith("??"))
-    warnings = (
-        ["SOURCE_DIRTY: upstream checkout has uncommitted or untracked files"] if lines else []
-    )
-    return GitMetadata(repo_url, commit, branch or None, bool(lines), untracked_count, warnings)
+
+    # Split dirty detection from the untracked-file count so neither pays the cost
+    # of walking the whole worktree. `--untracked-files=no` skips the walk; the
+    # untracked count uses the index-aware `git ls-files`. After confirming this is
+    # a Git checkout via `rev-parse --show-toplevel`, a None response from either
+    # sub-query means the call genuinely failed (timeout or git error) — surface
+    # that as `SOURCE_GIT_QUERY_FAILED` with nullable dirty/untracked rather than
+    # silently reporting a clean tree.
+    warnings: list[str] = []
+    dirty_status = _git(asset_root, "status", "--porcelain=v1", "--untracked-files=no")
+    if dirty_status is None:
+        warnings.append("SOURCE_GIT_QUERY_FAILED: could not determine working-tree dirty state")
+        dirty: bool | None = None
+    else:
+        dirty = any(line.strip() for line in dirty_status.splitlines())
+
+    untracked_raw = _git(asset_root, "ls-files", "--others", "--exclude-standard")
+    if untracked_raw is None:
+        warnings.append("SOURCE_GIT_QUERY_FAILED: could not enumerate untracked files")
+        untracked_count: int | None = None
+    else:
+        untracked_count = sum(1 for line in untracked_raw.splitlines() if line.strip())
+
+    # `dirty` covers staged/unstaged changes; untracked files also count as dirty.
+    has_untracked = untracked_count is not None and untracked_count > 0
+    if dirty is None and not has_untracked:
+        # Both signals are unknown (dirty query failed) AND no untracked files were
+        # found (or that query failed too) — we genuinely can't say.
+        final_dirty: bool | None = None
+    else:
+        final_dirty = bool(dirty) or has_untracked
+
+    if final_dirty:
+        warnings.append("SOURCE_DIRTY: upstream checkout has uncommitted or untracked files")
+    return GitMetadata(repo_url, commit, branch or None, final_dirty, untracked_count, warnings)
 
 
 def _path_check(

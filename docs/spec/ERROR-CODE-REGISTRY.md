@@ -17,7 +17,7 @@ uv run python scripts/check_error_registry.py --check
 - **Error** means the command cannot complete the requested contract or validation failed.
 - **Warning** means the command completed but the evidence is lower quality, incomplete, or environment-dependent.
 - **Strict** warnings are promoted to errors when `--strict` or profile `strict_validation = true` applies.
-- Strict-warning codes currently include `MESHDIR_MISSING`, `PROFILE_UNKNOWN_FIELD`, `SIM_MODEL_README_NOT_FOUND`, `SOURCE_DIRTY`, `SOURCE_NOT_GIT`, `SOURCE_NOT_GIT_ROOT`, and `UPSTREAM_LICENSE_NOT_FOUND`.
+- Strict-warning codes currently include `MESHDIR_MISSING`, `PROFILE_UNKNOWN_FIELD`, `SIM_MODEL_README_NOT_FOUND`, `SOURCE_DIRTY`, `SOURCE_GIT_QUERY_FAILED`, `SOURCE_NOT_GIT`, `SOURCE_NOT_GIT_ROOT`, and `UPSTREAM_LICENSE_NOT_FOUND`.
 - Fallback warning codes exist only for defensive normalization when a warning string lacks a code prefix.
 
 ## Registry
@@ -65,6 +65,7 @@ uv run python scripts/check_error_registry.py --check
 | `SENSOR_TARGET_TYPE_UNSUPPORTED` | Warning | `validation.py` | `validate` | A sensor uses an unsupported `objtype`; target validation was skipped. | Extend validator support or use a supported object type. |
 | `SIM_MODEL_README_NOT_FOUND` | Strict warning | `paths.py` | `doctor`, manifest generation | Optional `sim-model/README.md` is missing. | Restore upstream source documentation when publishing evidence. |
 | `SOURCE_DIRTY` | Strict warning | `paths.py` | provenance | Source checkout has uncommitted or untracked files. | Commit, stash, or explicitly accept dirty-source evidence. |
+| `SOURCE_GIT_QUERY_FAILED` | Strict warning | `paths.py` | provenance | A Git provenance sub-query (dirty state or untracked count) returned no result, so the corresponding field is null. | Investigate the Git environment (timeout, permissions, locked index) and rerun. |
 | `SOURCE_NOT_GIT` | Strict warning | `paths.py` | provenance | Source root is not a Git checkout. | Use a Git checkout when provenance matters. |
 | `SOURCE_NOT_GIT_ROOT` | Strict warning | `paths.py` | provenance | Asset root is inside a Git worktree but is not the worktree root. | Pass the checkout root that contains `sim-model/`. |
 | `SOURCE_WARNING` | Warning | `doctor.py` | `doctor` | Defensive fallback for provenance warnings without code prefixes. | Preserve code-prefixed warnings in provenance readers. |
