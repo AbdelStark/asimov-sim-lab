@@ -18,6 +18,31 @@
 
 ---
 
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/images/screenshots/screenshot-1.png" alt="Doctor and inspect reports" /><br />
+      <sub><b>doctor + inspect</b> — layout, provenance, and MJCF model summary at a glance</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/images/screenshots/screenshot-2.png" alt="Validate, runtime smoke, and viewer preflight" /><br />
+      <sub><b>validate + runtime-smoke + viewer-preflight</b> — static checks, MuJoCo compile, and viewer sanity</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/images/screenshots/screenshot-3.png" alt="Evidence and release export with failure surfacing" /><br />
+      <sub><b>evidence + export</b> — deterministic release archives and clear failure surfacing on broken fixtures</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/images/screenshots/screenshot-4.png" alt="MuJoCo viewer with the Asimov humanoid" /><br />
+      <sub><b>viewer</b> — the validated Asimov v1 humanoid loaded in the MuJoCo runtime</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
 Asimov Sim Lab turns a raw MuJoCo robot checkout — XML, STL meshes, presets — into **machine-readable, schema-backed evidence**: asset manifests, model contracts, validation reports, runtime smoke checks, and reproducible export bundles. Every artifact is content-addressed, versioned, and round-trippable via JSON Schema.
 
 ## Features
