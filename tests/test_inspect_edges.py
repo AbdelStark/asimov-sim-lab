@@ -124,6 +124,33 @@ def test_inspect_invalid_bool_attribute_fails(tmp_path: Path) -> None:
     assert "joint@limited" in exc.value.message
 
 
+def test_inspect_mesh_without_name_defaults_to_file_stem(tmp_path: Path) -> None:
+    # MuJoCo defaults an unnamed mesh's name to the file stem; the contract must agree
+    # so geoms referencing the stem don't trip MESH_ASSET_REFERENCE_UNKNOWN.
+    source = _write_source(
+        tmp_path,
+        """
+        <mujoco model="UnnamedMesh">
+          <compiler meshdir="../assets/meshes"/>
+          <asset><mesh file="LEFT_HIP_PITCH.STL"/></asset>
+          <worldbody>
+            <body name="pelvis_link">
+              <freejoint name="floating_base"/>
+              <geom name="hip_visual" type="mesh" mesh="LEFT_HIP_PITCH"/>
+            </body>
+          </worldbody>
+        </mujoco>
+        """,
+    )
+    resolution = resolve_asset_root(asset_root=source, profile_path=None, env={})
+
+    result = inspect_model(resolution)
+
+    assert result.mesh_count == 1
+    assert result.meshes[0].name == "LEFT_HIP_PITCH"
+    assert result.meshes[0].file == "LEFT_HIP_PITCH.STL"
+
+
 def test_inspect_no_asset_or_masses_is_allowed_with_warning(tmp_path: Path) -> None:
     source = _write_source(
         tmp_path,

@@ -130,3 +130,6 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
 - Sensor `objtype="geom"` references concrete geom names, not mesh asset names.
 - `source.root_path` in JSON output is an absolute local diagnostic path. Review generated artifacts before publishing them.
 - Fixture source roots are inside this repository and may intentionally produce Git provenance warnings.
+- `<mesh file="X.STL"/>` without a `name` attribute is named `"X"` (the file stem) per MuJoCo's own convention. Both `inspect` and `validate` must agree on this when adding new mesh-related logic.
+- `ViewerOpenResult.validation_passed` reflects `validate_model.passed` only. Use `failure_code` to discriminate between "validation failed" and gate failures like `VIEWER_SOURCE_DIRTY` / `VIEWER_LICENSE_MISSING` / `VIEWER_PRESET_NOT_FOUND`.
+- `make viewer-demo` auto-detects a sibling `asimov-v1/` checkout next to this repo and falls back to the synthetic `minimal_valid` fixture if absent. The auto-detection is a developer convenience in `scripts/viewer_demo.py` only — the library itself never discovers asset roots implicitly.

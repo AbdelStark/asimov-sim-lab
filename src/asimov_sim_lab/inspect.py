@@ -209,11 +209,13 @@ def _mesh_assets(root: ET.Element) -> list[MeshAssetContract]:
     if asset is None:
         return []
     meshes: list[MeshAssetContract] = []
-    for index, mesh in enumerate(asset.findall("mesh")):
+    for mesh in asset.findall("mesh"):
         file_name = mesh.attrib.get("file")
         if file_name is None:
             continue
-        name = mesh.attrib.get("name", f"mesh_{index}")
+        # MuJoCo defaults the mesh name to the file stem when no `name` is given.
+        # Match that convention so contract names line up with geom `mesh=...` refs.
+        name = mesh.attrib.get("name") or Path(file_name).stem
         meshes.append(MeshAssetContract(name=name, file=file_name))
     return meshes
 

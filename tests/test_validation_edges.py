@@ -143,3 +143,29 @@ def test_validate_missing_unlimited_hinge_range_warns(tmp_path: Path) -> None:
 
     assert any(issue.code == "JOINT_RANGE_MISSING" for issue in result.issues)
     assert result.passed
+
+
+def test_validate_geom_can_reference_mesh_by_file_stem(tmp_path: Path) -> None:
+    # An unnamed <mesh file="X.STL"/> is named "X" in MuJoCo. The validation view
+    # must agree, or geoms that reference the stem hit MESH_ASSET_REFERENCE_UNKNOWN.
+    source = _source(
+        tmp_path,
+        """
+        <mujoco model="StemRef">
+          <compiler meshdir="../assets/meshes"/>
+          <asset><mesh file="LEFT_HIP_PITCH.STL"/></asset>
+          <worldbody>
+            <body name="pelvis_link">
+              <freejoint name="floating_base"/>
+              <geom name="hip_visual" type="mesh" mesh="LEFT_HIP_PITCH"/>
+            </body>
+          </worldbody>
+        </mujoco>
+        """,
+    )
+    resolution = resolve_asset_root(asset_root=source, profile_path=None, env={})
+
+    result = validate_model(resolution)
+
+    assert not any(issue.code == "MESH_ASSET_REFERENCE_UNKNOWN" for issue in result.issues)
+    assert result.passed

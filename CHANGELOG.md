@@ -31,6 +31,9 @@ All notable user-facing changes are recorded here.
 - Malformed numeric and boolean MJCF attributes now fail contract extraction instead of silently serializing as `null`.
 - Manifest generation surfaces XML parse warnings when it cannot derive mesh reference provenance.
 - JSON error output no longer recurses when `--output` points at a directory.
+- `ViewerOpenResult.validation_passed` now reflects the actual `validate_model` outcome instead of being forced to `false` whenever any gate (`VIEWER_SOURCE_DIRTY`, `VIEWER_LICENSE_MISSING`, `VIEWER_PRESET_NOT_FOUND`) blocks preflight; consumers can now distinguish "model is invalid" from "model is valid but a non-validation gate failed".
+- `<mesh file="X.STL"/>` elements without an explicit `name` attribute now default to the file stem (`"X"`) in both inspect and validation views, matching MuJoCo's own naming convention; previously the inspect contract used `mesh_0`/`mesh_1`/... while validation silently dropped the entry, so any geom that referenced the mesh by its MuJoCo-implied name would falsely trip `MESH_ASSET_REFERENCE_UNKNOWN`.
+- `open` preflight no longer parses the MJCF twice; the orphaned `inspect_model` call before `validate_model` (which itself runs inspect) was removed.
 
 ### Known Limitations
 

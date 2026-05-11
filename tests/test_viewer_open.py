@@ -149,6 +149,9 @@ def test_viewer_open_preflight_can_require_clean_source(
 
     assert result.status == "error"
     assert result.failure_code == "VIEWER_SOURCE_DIRTY"
+    # The model itself is valid; only the dirty-source gate blocked preflight.
+    # `validation_passed` reflects validate_model, not the gate.
+    assert result.validation_passed is True
 
 
 def test_viewer_open_preflight_can_require_upstream_license(minimal_source: Path) -> None:
@@ -162,6 +165,8 @@ def test_viewer_open_preflight_can_require_upstream_license(minimal_source: Path
 
     assert result.status == "error"
     assert result.failure_code == "VIEWER_LICENSE_MISSING"
+    # The model itself is valid; only the missing-license gate blocked preflight.
+    assert result.validation_passed is True
 
 
 def test_open_cli_json_is_preflight_only_without_mujoco(minimal_source: Path, monkeypatch) -> None:

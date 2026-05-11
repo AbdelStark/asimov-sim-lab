@@ -17,6 +17,8 @@ ALLOWED_TOP_LEVEL_KEYS = {
     "default_asset_root",
     "default_output_dir",
     "strict_validation",
+    # Reserved per docs/spec/PROFILE-CONTRACT.md for forward compatibility.
+    # Silently accepted today; commands that consume them will land with their own spec.
     "viewer",
     "capture",
 }

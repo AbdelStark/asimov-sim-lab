@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from asimov_sim_lab.inspect import inspect_model
 from asimov_sim_lab.manifest import generate_asset_manifest
 from asimov_sim_lab.models import ERROR_REGISTRY_HELP_URL, Status, ValidationIssue, ViewerOpenResult
 from asimov_sim_lab.paths import PRIMARY_XML, AssetRootResolution
@@ -27,7 +26,6 @@ def run_viewer_open_preflight(
 ) -> ViewerOpenResult:
     """Run the schema-backed `open` preflight without launching a GUI."""
     manifest = generate_asset_manifest(resolution)
-    inspect_model(resolution)
     validation_result = validate_model(resolution, preset_dir=preset_dir, strict=strict)
 
     issues: list[ValidationIssue] = list(validation_result.issues)
@@ -55,18 +53,20 @@ def run_viewer_open_preflight(
 
     blocking = [issue for issue in issues if issue.severity == "error"]
     if blocking:
+        first = blocking[0]
+        failure_code = (
+            first.code if first.code.startswith("VIEWER_") else "VIEWER_VALIDATION_FAILED"
+        )
         return _result(
             resolution,
             manifest_warnings=manifest.warnings,
-            validation_passed=False,
+            validation_passed=validation_result.passed,
             validation_issue_count=len(issues),
             runtime_smoke_status="warning",
             preset_name=preset_name,
-            failure_code=blocking[0].code
-            if blocking[0].code.startswith("VIEWER_")
-            else "VIEWER_VALIDATION_FAILED",
-            failure_message=blocking[0].message,
-            failure_remediation=blocking[0].remediation
+            failure_code=failure_code,
+            failure_message=first.message,
+            failure_remediation=first.remediation
             or "Fix validation errors before opening the viewer.",
         )
 

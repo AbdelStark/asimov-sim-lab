@@ -84,23 +84,23 @@ def _validate_mesh_references(root: ET.Element, asset_root: Path) -> list[Valida
     mesh_assets: dict[str, str] = {}
     if asset is not None:
         for mesh in asset.findall("mesh"):
-            name = mesh.attrib.get("name")
             file_name = mesh.attrib.get("file")
-            if name is not None and file_name is not None:
-                mesh_assets[name] = file_name
-                if not (asset_root / MESH_DIR / file_name).is_file():
-                    issues.append(
-                        ValidationIssue(
-                            code="MESH_REFERENCE_MISSING",
-                            severity="error",
-                            message=f"MJCF mesh file reference does not exist: {file_name}",
-                            remediation=(
-                                "Add the missing STL file or update the mesh file reference."
-                            ),
-                            relative_path=(MESH_DIR / file_name).as_posix(),
-                            object_name=name,
-                        )
+            if file_name is None:
+                continue
+            # Mirror inspect._mesh_assets so the two views agree on mesh identity.
+            name = mesh.attrib.get("name") or Path(file_name).stem
+            mesh_assets[name] = file_name
+            if not (asset_root / MESH_DIR / file_name).is_file():
+                issues.append(
+                    ValidationIssue(
+                        code="MESH_REFERENCE_MISSING",
+                        severity="error",
+                        message=f"MJCF mesh file reference does not exist: {file_name}",
+                        remediation=("Add the missing STL file or update the mesh file reference."),
+                        relative_path=(MESH_DIR / file_name).as_posix(),
+                        object_name=name,
                     )
+                )
 
     for geom in root.findall(".//geom"):
         mesh_name = geom.attrib.get("mesh")
