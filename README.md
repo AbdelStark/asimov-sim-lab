@@ -242,14 +242,6 @@ Run the pipeline against a real upstream checkout:
 ASIMOV_SIM_LAB_ASSET_ROOT=/path/to/asimov-v1 make smoke-real
 ```
 
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), and [docs/spec/PRODUCT-SPEC.md](docs/spec/PRODUCT-SPEC.md). Changes are contract-first: code, tests, schemas, docs, and the [error-code registry](docs/spec/ERROR-CODE-REGISTRY.md) move together.
-
-## Security
-
-Vulnerabilities: please report privately. See [SECURITY.md](SECURITY.md).
-
 ## License
 
 [MIT](LICENSE)

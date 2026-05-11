@@ -12,3 +12,4 @@ build/
 .asimov-sim-lab/
 .tldr/
 .claude/
+**/.DS_Store
