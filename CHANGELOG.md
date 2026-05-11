@@ -35,6 +35,11 @@ All notable user-facing changes are recorded here.
 - `<mesh file="X.STL"/>` elements without an explicit `name` attribute now default to the file stem (`"X"`) in both inspect and validation views, matching MuJoCo's own naming convention; previously the inspect contract used `mesh_0`/`mesh_1`/... while validation silently dropped the entry, so any geom that referenced the mesh by its MuJoCo-implied name would falsely trip `MESH_ASSET_REFERENCE_UNKNOWN`.
 - `open` preflight no longer parses the MJCF twice; the orphaned `inspect_model` call before `validate_model` (which itself runs inspect) was removed.
 - Git provenance no longer runs `git status --untracked-files=all` (which walks the entire worktree under a 2s subprocess timeout, silently returning a "clean" tree on timeout). Dirty detection uses `git status --untracked-files=no` and untracked count uses `git ls-files --others --exclude-standard`; both are index-aware and cheap. A new strict warning `SOURCE_GIT_QUERY_FAILED` surfaces partial failures (timeout, locked index) so callers can distinguish "clean" from "unknown" instead of getting a silent false negative.
+- Non-UTF-8 profile TOML files now raise a typed `PROFILE_PARSE_FAILED` with a clear remediation instead of an uncaught `UnicodeDecodeError` traceback.
+
+### Changed
+
+- Internal: `_parse_xml` was duplicated verbatim across `inspect.py` and `validation.py`. Extracted to a private `asimov_sim_lab._xml.parse_mjcf` so the two modules cannot drift on error codes or remediation strings.
 
 ### Known Limitations
 

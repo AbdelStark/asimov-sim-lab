@@ -80,6 +80,13 @@ def load_profile(
             "Fix the TOML syntax in the profile file.",
             exit_code=2,
         ) from exc
+    except UnicodeDecodeError as exc:
+        raise LabError(
+            "PROFILE_PARSE_FAILED",
+            f"Profile is not valid UTF-8: {candidate}: {exc}",
+            "Re-save the profile file as UTF-8.",
+            exit_code=2,
+        ) from exc
     except OSError as exc:
         raise LabError(
             "PROFILE_PARSE_FAILED",

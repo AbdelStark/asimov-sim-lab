@@ -5,7 +5,7 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from asimov_sim_lab.errors import LabError
+from asimov_sim_lab._xml import parse_mjcf as _parse_xml
 from asimov_sim_lab.inspect import inspect_model
 from asimov_sim_lab.models import InspectResult, Severity, Status, ValidationIssue, ValidationResult
 from asimov_sim_lab.paths import MESH_DIR, PRIMARY_XML, STRICT_WARNING_CODES, AssetRootResolution
@@ -48,25 +48,6 @@ def validate_model(
             *(["preset-dir"] if preset_dir is not None else []),
         ],
     )
-
-
-def _parse_xml(xml_path: Path) -> ET.Element:
-    try:
-        return ET.parse(xml_path).getroot()
-    except ET.ParseError as exc:
-        raise LabError(
-            "XML_PARSE_FAILED",
-            f"Could not parse MJCF XML: {xml_path}: {exc}",
-            "Fix the XML before validation.",
-            exit_code=1,
-        ) from exc
-    except OSError as exc:
-        raise LabError(
-            "PRIMARY_XML_NOT_FOUND",
-            f"Could not read primary XML: {xml_path}: {exc}",
-            "Pass the upstream Asimov checkout root that contains sim-model/xmls/asimov.xml.",
-            exit_code=3,
-        ) from exc
 
 
 def _warnings_to_issues(warnings: list[str], *, strict: bool) -> list[ValidationIssue]:

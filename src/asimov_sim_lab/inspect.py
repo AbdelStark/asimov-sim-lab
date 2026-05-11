@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import NoReturn
 
+from asimov_sim_lab._xml import parse_mjcf as _parse_xml
 from asimov_sim_lab.errors import LabError
 from asimov_sim_lab.manifest import generate_asset_manifest
 from asimov_sim_lab.models import (
@@ -162,25 +163,6 @@ class _MeshdirResolution:
     def __init__(self, mesh_dir: Path, warning: str | None = None) -> None:
         self.mesh_dir = mesh_dir
         self.warning = warning
-
-
-def _parse_xml(xml_path: Path) -> ET.Element:
-    try:
-        return ET.parse(xml_path).getroot()
-    except ET.ParseError as exc:
-        raise LabError(
-            "XML_PARSE_FAILED",
-            f"Could not parse MJCF XML: {xml_path}: {exc}",
-            "Fix the XML before generating an inspect contract.",
-            exit_code=1,
-        ) from exc
-    except OSError as exc:
-        raise LabError(
-            "PRIMARY_XML_NOT_FOUND",
-            f"Could not read primary XML: {xml_path}: {exc}",
-            "Pass the upstream Asimov checkout root that contains sim-model/xmls/asimov.xml.",
-            exit_code=3,
-        ) from exc
 
 
 def _compiler_meshdir(root: ET.Element, xml_path: Path, asset_root: Path) -> _MeshdirResolution:

@@ -104,6 +104,19 @@ def test_layout_checks_missing_readme_warns(tmp_path: Path) -> None:
     assert any(check.code == "UPSTREAM_LICENSE_NOT_FOUND" for check in checks)
 
 
+def test_load_profile_rejects_non_utf8_bytes(tmp_path: Path) -> None:
+    # A profile saved in legacy encodings (Latin-1, UTF-16, etc.) must produce a
+    # typed PROFILE_PARSE_FAILED rather than an uncaught UnicodeDecodeError traceback.
+    profile_path = tmp_path / "bad.toml"
+    profile_path.write_bytes(b'name = "caf\xe9"\n')  # Latin-1 "café", invalid UTF-8
+
+    with pytest.raises(LabError) as exc:
+        load_profile(profile_path)
+
+    assert exc.value.code == "PROFILE_PARSE_FAILED"
+    assert "UTF-8" in (exc.value.message or "") or "utf" in (exc.value.message or "").lower()
+
+
 def test_read_git_metadata_for_clean_repo(tmp_path: Path) -> None:
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
     subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp_path, check=True)
