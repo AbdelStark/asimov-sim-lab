@@ -5,6 +5,7 @@
 **Spec-first inspection, validation, and evidence packaging for the [Asimov v1](https://github.com/k-scale/asimov) MuJoCo humanoid model.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/AbdelStark/asimov-sim-lab/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/AbdelStark/asimov-sim-lab/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/asimov-sim-lab?style=for-the-badge&logo=pypi&logoColor=white&color=3775A9)](https://pypi.org/project/asimov-sim-lab/)
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-22863A?style=for-the-badge)](LICENSE)
 [![Ruff](https://img.shields.io/badge/lint-ruff-D7FF64?style=for-the-badge&logo=ruff&logoColor=black)](https://github.com/astral-sh/ruff)
