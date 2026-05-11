@@ -12,6 +12,7 @@ These RFCs define the durable architecture and product-contract boundaries for t
 - `RFC-0006-evidence-and-export-contract.md`
 - `RFC-0007-ci-release-and-quality-gates.md`
 - `RFC-0008-viewer-open-contract.md`
+- `RFC-0009-pipeline-context.md`
 
 ## Phase-2 lock files
 The RFCs are now complemented by phase-2 implementation contracts in `docs/spec/`:
