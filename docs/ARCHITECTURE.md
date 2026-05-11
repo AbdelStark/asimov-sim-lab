@@ -45,6 +45,8 @@ models.py ------------ Pydantic public contracts and JSON Schemas
 9. `export.py` can generate a portable evidence directory plus a deterministic `tar.gz` archive and package manifest.
 10. The CLI emits text, Markdown, or JSON and optionally writes artifacts atomically.
 
+Within a single command invocation, orchestrator functions (`run_viewer_open_preflight`, `generate_evidence_bundle`, `generate_export_package`) share an internal `PipelineContext` (`asimov_sim_lab._pipeline.PipelineContext`) that carries the already-computed `AssetManifest`, parsed MJCF `ET.Element`, and `InspectResult`. Downstream functions (`validate_model`, `run_runtime_smoke`, `inspect_model`) accept an optional `context=` kwarg and reuse the cached results instead of re-deriving them — manifest and XML parse run exactly once per invocation. The context is private; never serialized, never exported from the public package. See `docs/rfcs/RFC-0009-pipeline-context.md`.
+
 ## Public Contracts
 
 The public contracts are Pydantic models in `src/asimov_sim_lab/models.py` and generated JSON Schemas in `docs/schemas/`. JSON output is the source of truth. Text and Markdown are views.

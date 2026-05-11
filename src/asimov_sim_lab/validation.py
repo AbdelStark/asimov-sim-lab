@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from asimov_sim_lab._xml import parse_mjcf as _parse_xml
 from asimov_sim_lab.inspect import inspect_model
@@ -11,18 +12,29 @@ from asimov_sim_lab.models import InspectResult, Severity, Status, ValidationIss
 from asimov_sim_lab.paths import MESH_DIR, PRIMARY_XML, STRICT_WARNING_CODES, AssetRootResolution
 from asimov_sim_lab.presets import validate_presets
 
+if TYPE_CHECKING:
+    from asimov_sim_lab._pipeline import PipelineContext
+
 
 def validate_model(
     resolution: AssetRootResolution,
     *,
     preset_dir: Path | None = None,
     strict: bool = False,
+    context: PipelineContext | None = None,
 ) -> ValidationResult:
-    """Validate the current source checkout against the MVP contracts."""
-    inspect_result = inspect_model(resolution)
+    """Validate the current source checkout against the MVP contracts.
+
+    When ``context`` is provided, reuses the cached inspect result and parsed
+    MJCF root instead of re-deriving them.
+    """
+    if context is not None:
+        inspect_result = context.inspect_result
+        root = context.xml_root
+    else:
+        inspect_result = inspect_model(resolution)
+        root = _parse_xml(resolution.asset_root / PRIMARY_XML)
     issues = _warnings_to_issues(inspect_result.warnings, strict=strict)
-    xml_path = resolution.asset_root / PRIMARY_XML
-    root = _parse_xml(xml_path)
 
     issues.extend(_validate_mesh_references(root, resolution.asset_root))
     issues.extend(_validate_actuator_references(inspect_result))

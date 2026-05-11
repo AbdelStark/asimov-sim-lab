@@ -8,6 +8,7 @@ import tarfile
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+from asimov_sim_lab._pipeline import PipelineContext
 from asimov_sim_lab.artifacts import sha256_file, write_text_atomic
 from asimov_sim_lab.errors import LabError
 from asimov_sim_lab.evidence import (
@@ -53,12 +54,15 @@ def generate_export_package(
     overwrite: bool = False,
     package_name: str = DEFAULT_PACKAGE_NAME,
     deterministic: bool = True,
+    context: PipelineContext | None = None,
 ) -> ExportPackageResult:
     """Generate a deterministic tarball from a portable evidence bundle."""
     _validate_package_name(package_name)
     package_dir = output_dir.expanduser().resolve()
     _prepare_package_dir(package_dir, overwrite=overwrite)
 
+    if context is None:
+        context = PipelineContext.build(resolution)
     generated_at_utc = DETERMINISTIC_TIMESTAMP if deterministic else None
     evidence_result = generate_evidence_bundle(
         resolution,
@@ -69,6 +73,7 @@ def generate_export_package(
         generated_at_utc=generated_at_utc,
         bundle_dir_label=EVIDENCE_DIR,
         include_runtime_elapsed=not deterministic,
+        context=context,
     )
 
     evidence_bundle_relative = f"{EVIDENCE_DIR}/{EVIDENCE_BUNDLE_FILE}"

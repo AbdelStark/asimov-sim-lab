@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from asimov_sim_lab.manifest import generate_asset_manifest
+from asimov_sim_lab._pipeline import PipelineContext
 from asimov_sim_lab.models import ERROR_REGISTRY_HELP_URL, Status, ValidationIssue, ViewerOpenResult
 from asimov_sim_lab.paths import PRIMARY_XML, AssetRootResolution
 from asimov_sim_lab.presets import load_preset_dir
@@ -23,10 +23,15 @@ def run_viewer_open_preflight(
     require_clean_source: bool = False,
     require_license: bool = False,
     mujoco_module: MujocoModuleLike | None = None,
+    context: PipelineContext | None = None,
 ) -> ViewerOpenResult:
     """Run the schema-backed `open` preflight without launching a GUI."""
-    manifest = generate_asset_manifest(resolution)
-    validation_result = validate_model(resolution, preset_dir=preset_dir, strict=strict)
+    if context is None:
+        context = PipelineContext.build(resolution)
+    manifest = context.manifest
+    validation_result = validate_model(
+        resolution, preset_dir=preset_dir, strict=strict, context=context
+    )
 
     issues: list[ValidationIssue] = list(validation_result.issues)
     if preset_name is not None:
@@ -74,6 +79,7 @@ def run_viewer_open_preflight(
         resolution,
         require_mujoco=True,
         mujoco_module=mujoco_module,
+        context=context,
     )
     if runtime_result.status == "error":
         failure_code = (

@@ -2,7 +2,14 @@
 
 ## Status
 
-Proposed. Not yet implemented. Targets the next minor release after `0.1.0`.
+Accepted and implemented. Shipped under the `0.1.0` pre-release line.
+
+Measured perf on the real Asimov-v1 humanoid (28 STL files):
+
+- `evidence`: **566 ms → 184 ms** (3.08× faster, 5-run average, warm filesystem cache).
+- Output bytes (`archive_sha256`, `evidence_bundle_sha256`, `package_manifest_sha256`) verified byte-identical to the pre-RFC implementation via `test_export_bytes_identical_with_and_without_context`.
+
+The `validate_model` and `inspect_model` second-order improvements were not measured directly because they are dominated by the single-shared upstream chain.
 
 ## Abstract
 

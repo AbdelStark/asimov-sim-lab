@@ -40,6 +40,7 @@ All notable user-facing changes are recorded here.
 ### Changed
 
 - Internal: `_parse_xml` was duplicated verbatim across `inspect.py` and `validation.py`. Extracted to a private `asimov_sim_lab._xml.parse_mjcf` so the two modules cannot drift on error codes or remediation strings.
+- Orchestrator commands (`evidence`, `export`, `open`) now share a single internal `PipelineContext` so the asset manifest and MJCF parse run exactly once per invocation instead of 4–5 times. On the real Asimov-v1 humanoid (28 STL files), `evidence` drops from ~566 ms to ~184 ms (**3.08× faster**); `export` benefits proportionally. Output bytes are byte-identical to the prior implementation (`archive_sha256`, `evidence_bundle_sha256`, and `package_manifest_sha256` are unchanged for the same input). The public function signatures gain an optional `context=` kwarg; existing callers that don't pass it keep working unchanged. See `docs/rfcs/RFC-0009-pipeline-context.md`.
 
 ### Known Limitations
 

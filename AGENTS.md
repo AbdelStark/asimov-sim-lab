@@ -111,6 +111,7 @@ ASIMOV_SIM_LAB_ASSET_ROOT=/absolute/path/to/asimov-v1 make release-dry-run
 - `runtime-smoke` only proves optional MuJoCo model compilation, not simulation correctness, control quality, or hardware fidelity.
 - `open` is preflight-only. It validates source/preset/runtime readiness, emits `ViewerOpenResult`, and must keep `opened=false` until a separate interactive launch contract lands.
 - Keep docs aligned with shipped behavior. Do not describe deferred commands as implemented.
+- When chaining `inspect`, `validate`, `runtime-smoke`, or any orchestrator (`evidence`, `export`, `open`) in one process, pass a single `asimov_sim_lab._pipeline.PipelineContext` rather than letting each function rebuild the asset manifest and re-parse the MJCF. The context is internal; never export or document it as a public surface. See `docs/rfcs/RFC-0009-pipeline-context.md`.
 
 ## Critical Constraints
 

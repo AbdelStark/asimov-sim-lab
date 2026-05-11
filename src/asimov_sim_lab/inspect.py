@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import NoReturn
+from typing import TYPE_CHECKING, NoReturn
 
 from asimov_sim_lab._xml import parse_mjcf as _parse_xml
 from asimov_sim_lab.errors import LabError
 from asimov_sim_lab.manifest import generate_asset_manifest
 from asimov_sim_lab.models import (
     ActuatorContract,
+    AssetManifest,
     CameraContract,
     GeomContract,
     InspectResult,
@@ -22,13 +23,35 @@ from asimov_sim_lab.models import (
 )
 from asimov_sim_lab.paths import MESH_DIR, PRIMARY_XML, AssetRootResolution
 
+if TYPE_CHECKING:
+    from asimov_sim_lab._pipeline import PipelineContext
 
-def inspect_model(resolution: AssetRootResolution) -> InspectResult:
-    """Parse the supported MJCF entrypoint into a stable contract."""
+
+def inspect_model(
+    resolution: AssetRootResolution,
+    *,
+    context: PipelineContext | None = None,
+) -> InspectResult:
+    """Parse the supported MJCF entrypoint into a stable contract.
+
+    When ``context`` is provided, returns the already-computed inspect result
+    so the same checkout is not re-parsed during a chained command.
+    """
+    if context is not None:
+        return context.inspect_result
     manifest = generate_asset_manifest(resolution)
     xml_path = resolution.asset_root / PRIMARY_XML
     root = _parse_xml(xml_path)
+    return _inspect_from_root(root, manifest, resolution)
 
+
+def _inspect_from_root(
+    root: ET.Element,
+    manifest: AssetManifest,
+    resolution: AssetRootResolution,
+) -> InspectResult:
+    """Build the inspect contract from an already-parsed MJCF root + manifest."""
+    xml_path = resolution.asset_root / PRIMARY_XML
     warnings = list(manifest.warnings)
     compiler_meshdir = _compiler_meshdir(root, xml_path, resolution.asset_root)
     if compiler_meshdir.warning is not None:

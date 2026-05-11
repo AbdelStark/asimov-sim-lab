@@ -5,11 +5,14 @@ from __future__ import annotations
 import importlib
 from pathlib import Path
 from time import perf_counter
-from typing import Protocol, cast
+from typing import TYPE_CHECKING, Protocol, cast
 
 from asimov_sim_lab.manifest import generate_asset_manifest
 from asimov_sim_lab.models import RuntimeModelCounts, RuntimeSmokeResult, Status
 from asimov_sim_lab.paths import PRIMARY_XML, AssetRootResolution
+
+if TYPE_CHECKING:
+    from asimov_sim_lab._pipeline import PipelineContext
 
 
 class MjModelLike(Protocol):
@@ -40,9 +43,14 @@ def run_runtime_smoke(
     generated_at_utc: str | None = None,
     include_elapsed: bool = True,
     mujoco_module: MujocoModuleLike | None = None,
+    context: PipelineContext | None = None,
 ) -> RuntimeSmokeResult:
-    """Load the canonical MJCF with MuJoCo when the optional runtime is installed."""
-    manifest = generate_asset_manifest(resolution)
+    """Load the canonical MJCF with MuJoCo when the optional runtime is installed.
+
+    When ``context`` is provided, reuses the cached asset-manifest warnings
+    instead of re-hashing every mesh file.
+    """
+    manifest = context.manifest if context is not None else generate_asset_manifest(resolution)
     warnings = list(manifest.warnings)
     xml_path = resolution.asset_root / PRIMARY_XML
     runtime = mujoco_module if mujoco_module is not None else _import_mujoco()

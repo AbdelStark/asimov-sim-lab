@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from asimov_sim_lab._pipeline import PipelineContext
 from asimov_sim_lab.artifacts import sha256_file, write_text_atomic
 from asimov_sim_lab.errors import LabError
-from asimov_sim_lab.inspect import inspect_model, render_inspect_markdown
-from asimov_sim_lab.manifest import generate_asset_manifest
+from asimov_sim_lab.inspect import render_inspect_markdown
 from asimov_sim_lab.models import (
     EvidenceArtifact,
     EvidenceBundleResult,
@@ -35,19 +35,25 @@ def generate_evidence_bundle(
     generated_at_utc: str | None = None,
     bundle_dir_label: str | None = None,
     include_runtime_elapsed: bool = True,
+    context: PipelineContext | None = None,
 ) -> EvidenceBundleResult:
     """Generate a complete evidence directory for one source checkout."""
     bundle_dir = output_dir.expanduser().resolve()
     _prepare_bundle_dir(bundle_dir, overwrite=overwrite)
 
-    manifest = generate_asset_manifest(resolution)
-    inspect_result = inspect_model(resolution)
-    validation_result = validate_model(resolution, preset_dir=preset_dir, strict=strict)
+    if context is None:
+        context = PipelineContext.build(resolution)
+    manifest = context.manifest
+    inspect_result = context.inspect_result
+    validation_result = validate_model(
+        resolution, preset_dir=preset_dir, strict=strict, context=context
+    )
     runtime_smoke_result = run_runtime_smoke(
         resolution,
         require_mujoco=False,
         generated_at_utc=generated_at_utc,
         include_elapsed=include_runtime_elapsed,
+        context=context,
     )
 
     if generated_at_utc is not None:
